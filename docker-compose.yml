@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_gym_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=gym_db
+    ports:
+      - "5432:5432"
+
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: gym_tracker_api
+
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./app:/app
+      - ./workout.json:/app/workout.json
+      - ./alembic.ini:/alembic.ini
+      - ./alembic:/alembic
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://user:password@db:5432/gym_db
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
