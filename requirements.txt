@@ -16,6 +16,12 @@ pydantic-settings>=0.1
 # Database migrations
 alembic>=1.10
 
+# Testing dependencies
+pytest>=7.4
+pytest-cov>=4.1
+pytest-asyncio>=0.21
+httpx>=0.24  # Required for TestClient async support
+
 # Optional: development / linting / type checking (uncomment if needed)
 # black
 # isort
