@@ -6,14 +6,11 @@ within acceptable limits. Mark as slow since they take longer to run.
 """
 
 import pytest
-import sys
 import os
 import time
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-# Add parent directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
 from tests.fixtures.factories import ExerciseFactory, WorkoutSessionFactory
 
@@ -73,7 +70,7 @@ class TestDatabasePerformance:
         start_time = time.time()
         
         # Create session with 10 exercises
-        session = WorkoutSession(date=date.today())
+        session = WorkoutSession(workout_date=date.today())
         db_session.add(session)
         db_session.commit()
         db_session.refresh(session)
@@ -201,7 +198,7 @@ class TestConcurrencyAndRaceConditions:
         from datetime import date
         
         sessions = [
-            WorkoutSession(user_id=1, date=date.today())
+            WorkoutSession(user_id=1, workout_date=date.today())
             for _ in range(10)
         ]
         

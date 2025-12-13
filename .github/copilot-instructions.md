@@ -1,155 +1,90 @@
-<!-- Copilot instructions for gym-dorian repository -->
-# Guidance for AI coding agents
-# copilot-instructions.md
+# Role: Expert Backend Architect (FastAPI + PostgreSQL)
 
-This document defines formal guidelines for GitHub Copilot when assisting in Python backend engineering tasks within this repository. These instructions should be followed consistently to ensure code quality, maintainability, and alignment with project standards.
+## Project Overview
+Implement a Workout Tracking & Planning backend. Focus: Separation of concerns, strict typing, and robust migrations.
 
-## 1. Purpose
+## Directory Structure
+Maintain this layout. **Check path existence** before creating files.
 
-GitHub Copilot must generate code and suggestions that adhere to the architectural, stylistic, and operational standards defined by this backend codebase. Copilot should prefer correctness, clarity, and long-term maintainability over brevity.
+.
+├── app/
+│   ├── api/v1/         # Route handlers
+│   ├── core/           # Config (BaseSettings), Security
+│   ├── models/         # SQLAlchemy 2.0 (Mapped/mapped_column)
+│   ├── schemas/        # Pydantic v2
+│   ├── services/       # Logic & Transactions
+│   ├── database.py     # Engine, SessionLocal, get_db
+│   └── main.py         # Entrypoint
+├── alembic/            # Migrations
+├── docker-compose.yml
+└── requirements.txt
 
-## 2. Coding Standards
+---
 
-* Follow **PEP 8**, type hinting, and idiomatic Python practices.
-* Prefer clear, modular, and testable code structures.
-* Avoid anti‑patterns, shortcuts, or insecure practices.
-* Provide small contextual explanations only when beneficial.
+## Execution Protocol
+1. **State:** Update `manage_todo_list` before and after every task.
+2. **Context:** One-line preamble before any tool call.
+3. **Atomic:** Use `apply_patch` for minimal, focused changes.
+4. **Iterate:** If a command (docker, alembic, pytest) fails, fix it **before** reporting progress.
+5. **Report:** Concise status updates (1-2 sentences) every 3-5 tool calls.
 
-## 3. Application Architecture
+---
 
-### 3.1 Framework
+## Implementation Roadmap
 
-* Default framework: **FastAPI** (async-first design). Use async where appropriate.
+### Phase 1: Foundation (Infra & Connectivity)
+- **Tasks:** `docker-compose.yml` (API+DB), `core/config.py`, `database.py`, and a health-check `/ping` in `main.py`.
+- **DoD:** Containers start; API connects to DB; `curl localhost:8000/ping` returns 200.
 
-### 3.2 Project Structure
+### Phase 2: Persistence (Core Models & Migrations)
+- **Tasks:** Define `Exercise`, `WorkoutSession`, and `LogExercise` models. Configure Alembic.
+- **DoD:** `alembic revision --autogenerate` creates scripts; `alembic upgrade head` succeeds.
 
-Copilot should encourage and generate code following this structure:
+### Phase 3: Logging (Business Logic & POST API)
+- **Tasks:** `schemas/log_schema.py`, `services/log_service.py`, `api/v1/workout_router.py`.
+- **DoD:** `POST /workouts/log` accepts nested JSON, finds/creates Exercises, and persists logs in a single transaction.
 
-```
-app/
-  api/
-    routers/
-    dependencies/
-  core/
-  models/
-  services/
-  repositories/
-  db/
-  tests/
-```
+### Phase 4: Planning (Seeding & Hierarchical Data)
+- **Tasks:** `app/models/plan.py`, `seed_workout_plan` logic.
+- **DoD:** Seed service imports `workout.json` without duplicates (Idempotent).
 
-### 3.3 API Design
+### Phase 5: Summary (Output API)
+- **Tasks:** `GET /workouts/plan/{id}` implementation.
+- **DoD:** Returns nested JSON mirroring the original plan structure.
 
-* Use Pydantic models for request/response payloads.
-* Provide clear routing, versioning, and error-handling patterns.
-* Ensure proper separation between API layer, service layer, and data layer.
+---
 
-### 3.4 Database
-
-* Use **SQLAlchemy 2.0** ORM patterns.
-* Default database: **PostgreSQL**.
-* Generate migration scaffolding using **Alembic** when applicable.
-
-## 4. Testing Guidelines
-
-### 4.1 Test-Driven Development
-
-**CRITICAL**: When implementing new features, ALWAYS create tests alongside the code:
-
-* **For new endpoints**: Create integration tests in `app/tests/integration/`
-* **For new services**: Create unit tests with mocks in `app/tests/unit/`
-* **For new models**: Add CRUD integration tests
-* **Execute tests**: Run `./run_tests.sh fast` after implementation to validate
-
-### 4.2 Testing Framework
-
-* Use **pytest** as the primary testing framework.
-* Prefer fixtures for database and environment setup.
-* Maintain **minimum 90% code coverage** for new code.
-* All tests must pass before considering a feature complete.
-
-### 4.3 Test Structure
-
-Follow the established test organization:
-
-```
-app/tests/
-  ├── unit/              # Unit tests (mocked dependencies)
-  ├── integration/       # API/Database tests
-  └── fixtures/          # Test data factories
-```
-
-### 4.4 Test Patterns
-
-* **Use AAA pattern**: Arrange, Act, Assert
-* **Descriptive names**: `test_create_exercise_with_valid_data_returns_201`
-* **Use factories**: Leverage `ExerciseFactory`, `WorkoutSessionFactory`, etc.
-* **Isolated tests**: Each test must run independently
-* **Fast tests**: Keep tests fast (prefer SQLite in-memory for unit/integration tests)
-
-### 4.5 Test Examples
-
-**Integration test for new endpoint:**
-```python
-@pytest.mark.integration
-class TestMyEndpoint:
-    def test_create_resource(self, client: TestClient):
-        response = client.post("/api/v1/resource", json={"name": "Test"})
-        assert response.status_code == 201
-        assert response.json()["name"] == "Test"
-```
-
-**Unit test for service:**
-```python
-@pytest.mark.unit
-class TestMyService:
-    def test_calculation(self):
-        mock_db = Mock()
-        result = my_service.calculate(mock_db, 10, 20)
-        assert result == 30
-```
-
-### 4.6 Running Tests
-
-After implementing features, ALWAYS run:
-
-```bash
-# Quick validation during development
-./run_tests.sh fast
-
-# Full test suite with coverage before commit
-./run_tests.sh coverage
-
-# Specific test file
-pytest app/tests/integration/test_my_feature.py -v
-```
-
-## 5. Documentation Standards
-
-* Produce Google-style or NumPy-style docstrings for functions, classes, and modules.
-* Include inline comments only when the logic is non-obvious.
-* Prefer clarity over verbosity.
-
-## 6. DevOps & Tooling
-
-* Dockerfiles should follow best-practice multi-stage builds.
-* Use `black`, `isort`, `flake8`, and `mypy` for formatting/linting.
-* CI suggestions should default to GitHub Actions.
-
-## 7. Preferred Patterns
+## Preferred Patterns
 
 * Dependency Injection using FastAPI's dependency system.
 * Repository and Service abstraction layers.
 * Environment-based configuration using Pydantic `BaseSettings`.
+* Local development with Docker and `docker-compose`.
+* Local environment variables via a `.env` file and `python-dotenv` library.
+* Virtual environment activation for local development: `source .venv/bin/activate`.
 
-## 8. Patterns to Avoid
+---
+
+## Patterns to Avoid
 
 * Hardcoded secrets or credentials.
 * Raw SQL without justification.
 * Overly complex inheritance trees.
 * Global shared state without proper synchronization.
 
-## 9. Expected Copilot Behaviors
+---
+
+## Technical Guardrails
+- **SQLAlchemy 2.0:** Use `Mapped` and `mapped_column`. Use `session.execute(select(...))` syntax.
+- **Pydantic v2:** Use `model_validate` and `from_attributes = True`.
+- **Transactions:** Services must use `with db.begin():` or explicit commit/rollback blocks.
+- **No Hardcoding:** All variables (DB credentials, ports) must come from environment variables via `.env` file.
+- **Migrations:** Meaningful migration names only (e.g., `init_workout_tables`).
+- **Local Execution** Activate virtual environment for local dev: `source .venv/bin/activate`.
+
+---
+
+## Expected Copilot Behaviors
 
 Copilot should:
 
@@ -162,7 +97,9 @@ Copilot should:
 * Update test fixtures when adding new models or relationships.
 * Ensure all new code maintains the 90%+ coverage standard.
 
-## 10. Workflow for New Features
+---
+
+## Workflow for New Features
 
 When implementing a new feature, follow this sequence:
 
@@ -176,7 +113,7 @@ When implementing a new feature, follow this sequence:
 8. **Document** - Update docstrings and relevant documentation
 9. **Final validation** - Run full test suite before considering complete
 
-### 10.1 Feature Completion Checklist
+### Feature Completion Checklist
 
 A feature is only complete when:
 
@@ -188,8 +125,20 @@ A feature is only complete when:
 - ✅ Docstrings are complete
 - ✅ No linting errors
 
-## 11. Evolution
+---
+
+## Evolution
 
 This file may be updated as the project grows. Copilot should respect the most recent version and adapt its suggestions accordingly.
 
-**Last Updated**: December 11, 2025 - Added comprehensive testing guidelines and workflow
+**Last Updated**: December 13, 2025
+- Improved overall clarity and structure.
+- Added project overview and directory structure sections.
+
+---
+
+## Get Started
+1. Initialize `manage_todo_list`.
+2. Check if Phase 1 is completed.
+2. Implement **Phase 1** or proceed to the next Phase.
+3. Provide the `docker-compose up` command and verify the DB connection via the `/ping` endpoint.

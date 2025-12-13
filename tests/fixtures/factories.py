@@ -5,16 +5,13 @@ These factories provide convenient methods for creating test objects
 with customizable attributes.
 """
 
-import sys
 import os
 from datetime import date, timedelta
 from typing import Optional
 
-# Add parent directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
-from models.exercise import Exercise
-from models.log import WorkoutSession, LogExercise
+from app.models.exercise import Exercise
+from app.models.log import WorkoutSession, LogExercise
 
 
 class ExerciseFactory:
@@ -92,7 +89,7 @@ class WorkoutSessionFactory:
         
         return WorkoutSession(
             user_id=user_id,
-            date=workout_date,
+            workout_date=workout_date,
             duration_minutes=duration_minutes,
             notes=notes
         )
@@ -120,7 +117,7 @@ class WorkoutSessionFactory:
         return [
             WorkoutSession(
                 user_id=user_id,
-                date=start_date + timedelta(days=i),
+                workout_date=start_date + timedelta(days=i),
                 duration_minutes=45 + (i * 5),
                 notes=f"Session {i + 1}"
             )

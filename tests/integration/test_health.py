@@ -5,12 +5,9 @@ These tests verify that the API is properly configured and responding.
 """
 
 import pytest
-import sys
 import os
 from fastapi.testclient import TestClient
 
-# Add parent directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
 
 
@@ -79,7 +76,7 @@ class TestDatabaseConnection:
     
     def test_can_query_database(self, db_session):
         """Test that we can execute queries against the database."""
-        from models.exercise import Exercise
+        from app.models.exercise import Exercise
         
         # Should not raise an exception
         result = db_session.query(Exercise).all()

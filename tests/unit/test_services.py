@@ -6,13 +6,10 @@ When services are implemented, these tests should use mocks for database operati
 """
 
 import pytest
-import sys
 import os
 from unittest.mock import Mock, MagicMock, patch
 from sqlalchemy.orm import Session
 
-# Add parent directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
 
 
@@ -137,7 +134,7 @@ class TestDataTransformations:
         Services often convert between database models and API schemas.
         These transformations should be tested.
         """
-        from models.exercise import Exercise
+        from app.models.exercise import Exercise
         
         # Arrange
         exercise = Exercise(

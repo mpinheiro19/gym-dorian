@@ -5,14 +5,11 @@ These tests verify CRUD operations on the Exercise model.
 """
 
 import pytest
-import sys
 import os
 from sqlalchemy.orm import Session
 
-# Add parent directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
-from models.exercise import Exercise
+from app.models.exercise import Exercise
 
 
 @pytest.mark.integration

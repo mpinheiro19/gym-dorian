@@ -8,22 +8,17 @@ This module provides shared fixtures for all tests, including:
 """
 
 import os
-import sys
 import pytest
 from typing import Generator
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
-
-# Add the app directory to the path to enable imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-
-from database import get_db
-from main import app
-from models.base import Base
-from models.exercise import Exercise
-from models.log import WorkoutSession, LogExercise
+from app.database import get_db
+from app.main import app
+from app.models.base import Base
+from app.models.exercise import Exercise
+from app.models.log import WorkoutSession, LogExercise
 
 
 # Use in-memory SQLite for tests (fast and isolated)
@@ -153,7 +148,7 @@ def sample_workout_session(db_session: Session, sample_exercises: list[Exercise]
     
     session = WorkoutSession(
         user_id=1,
-        date=date(2025, 12, 10),
+        workout_date=date(2025, 12, 10),
         duration_minutes=60,
         notes="Great workout session"
     )

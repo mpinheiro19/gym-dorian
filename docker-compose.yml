@@ -19,12 +19,12 @@ services:
       dockerfile: Dockerfile
     container_name: gym_tracker_api
 
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
-      - ./app:/app
-      - ./workout.json:/app/workout.json
-      - ./alembic.ini:/alembic.ini
-      - ./alembic:/alembic
+      - ./app:/code/app
+      - ./workout.json:/code/workout.json
+      - ./alembic.ini:/code/alembic.ini
+      - ./alembic:/code/alembic
     ports:
       - "8000:8000"
     environment:

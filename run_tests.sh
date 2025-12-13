@@ -4,6 +4,9 @@
 
 set -e  # Exit on error
 
+# Set PYTHONPATH to ensure imports work correctly
+export PYTHONPATH="${PYTHONPATH}:$(pwd)/app"
+
 # Colors for output
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -42,12 +45,12 @@ case $COMMAND in
     
     "unit")
         print_header "Running Unit Tests"
-        pytest -v -m unit
+        pytest tests/unit -v
         ;;
     
     "integration")
         print_header "Running Integration Tests"
-        pytest -v -m integration
+        pytest tests/integration -v
         ;;
     
     "fast")
@@ -88,12 +91,12 @@ case $COMMAND in
     
     "health")
         print_header "Running Health Check Tests"
-        pytest -v app/tests/integration/test_health.py
+        pytest -v tests/integration/test_health.py
         ;;
     
     "models")
         print_header "Running Model Tests"
-        pytest -v app/tests/integration/test_exercise_model.py app/tests/integration/test_workout_models.py
+        pytest -v tests/integration/test_exercise_model.py tests/integration/test_workout_models.py
         ;;
     
     "help"|"-h"|"--help")

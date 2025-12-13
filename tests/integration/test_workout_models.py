@@ -5,16 +5,13 @@ These tests verify CRUD operations and relationships between workout sessions an
 """
 
 import pytest
-import sys
 import os
 from datetime import date
 from sqlalchemy.orm import Session
 
-# Add parent directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
-from models.log import WorkoutSession, LogExercise
-from models.exercise import Exercise
+from app.models.log import WorkoutSession, LogExercise
+from app.models.exercise import Exercise
 
 
 @pytest.mark.integration
@@ -25,7 +22,7 @@ class TestWorkoutSessionModel:
         """Test creating a new workout session."""
         session = WorkoutSession(
             user_id=1,
-            date=date(2025, 12, 11),
+            workout_date=date(2025, 12, 11),
             duration_minutes=45,
             notes="Morning workout"
         )
@@ -36,7 +33,7 @@ class TestWorkoutSessionModel:
         
         assert session.id is not None
         assert session.user_id == 1
-        assert session.date == date(2025, 12, 11)
+        assert session.workout_date == date(2025, 12, 11)
         assert session.duration_minutes == 45
         assert session.notes == "Morning workout"
     
@@ -50,15 +47,15 @@ class TestWorkoutSessionModel:
         
         assert session.id is not None
         assert session.user_id == 1  # default
-        assert session.date is not None  # default to current date
+        assert session.workout_date is not None  # default to current date
         assert session.duration_minutes is None
         assert session.notes is None
     
     def test_query_sessions_by_user_id(self, db_session: Session):
         """Test querying workout sessions by user ID."""
-        session1 = WorkoutSession(user_id=1, date=date(2025, 12, 10))
-        session2 = WorkoutSession(user_id=1, date=date(2025, 12, 11))
-        session3 = WorkoutSession(user_id=2, date=date(2025, 12, 11))
+        session1 = WorkoutSession(user_id=1, workout_date=date(2025, 12, 10))
+        session2 = WorkoutSession(user_id=1, workout_date=date(2025, 12, 11))
+        session3 = WorkoutSession(user_id=2, workout_date=date(2025, 12, 11))
         
         db_session.add_all([session1, session2, session3])
         db_session.commit()
@@ -71,20 +68,20 @@ class TestWorkoutSessionModel:
     
     def test_query_sessions_by_date_range(self, db_session: Session):
         """Test querying workout sessions by date range."""
-        session1 = WorkoutSession(date=date(2025, 12, 1))
-        session2 = WorkoutSession(date=date(2025, 12, 15))
-        session3 = WorkoutSession(date=date(2025, 12, 30))
+        session1 = WorkoutSession(workout_date=date(2025, 12, 1))
+        session2 = WorkoutSession(workout_date=date(2025, 12, 15))
+        session3 = WorkoutSession(workout_date=date(2025, 12, 30))
         
         db_session.add_all([session1, session2, session3])
         db_session.commit()
         
         sessions = db_session.query(WorkoutSession).filter(
-            WorkoutSession.date >= date(2025, 12, 10),
-            WorkoutSession.date <= date(2025, 12, 20)
+            WorkoutSession.workout_date >= date(2025, 12, 10),
+            WorkoutSession.workout_date <= date(2025, 12, 20)
         ).all()
         
         assert len(sessions) == 1
-        assert sessions[0].date == date(2025, 12, 15)
+        assert sessions[0].workout_date == date(2025, 12, 15)
     
     def test_update_workout_session(self, db_session: Session):
         """Test updating a workout session."""
@@ -102,7 +99,7 @@ class TestWorkoutSessionModel:
     
     def test_delete_workout_session(self, db_session: Session):
         """Test deleting a workout session."""
-        session = WorkoutSession(date=date(2025, 12, 11))
+        session = WorkoutSession(workout_date=date(2025, 12, 11))
         db_session.add(session)
         db_session.commit()
         
@@ -123,7 +120,7 @@ class TestLogExerciseModel:
     
     def test_create_log_exercise(self, db_session: Session, sample_exercises):
         """Test creating a new exercise log."""
-        session = WorkoutSession(date=date(2025, 12, 11))
+        session = WorkoutSession(workout_date=date(2025, 12, 11))
         db_session.add(session)
         db_session.commit()
         
@@ -148,7 +145,7 @@ class TestLogExerciseModel:
     
     def test_log_exercise_relationships(self, db_session: Session, sample_exercises):
         """Test relationships between LogExercise, WorkoutSession, and Exercise."""
-        session = WorkoutSession(date=date(2025, 12, 11))
+        session = WorkoutSession(workout_date=date(2025, 12, 11))
         db_session.add(session)
         db_session.commit()
         
@@ -166,7 +163,7 @@ class TestLogExerciseModel:
         
         # Test accessing session through relationship
         assert log.session.id == session.id
-        assert log.session.date == date(2025, 12, 11)
+        assert log.session.workout_date == date(2025, 12, 11)
         
         # Test accessing exercise through relationship
         assert log.exercise.id == sample_exercises[0].id
@@ -196,8 +193,8 @@ class TestLogExerciseModel:
     
     def test_query_logs_by_exercise(self, db_session: Session, sample_exercises):
         """Test querying exercise logs by exercise ID."""
-        session1 = WorkoutSession(date=date(2025, 12, 10))
-        session2 = WorkoutSession(date=date(2025, 12, 11))
+        session1 = WorkoutSession(workout_date=date(2025, 12, 10))
+        session2 = WorkoutSession(workout_date=date(2025, 12, 11))
         db_session.add_all([session1, session2])
         db_session.commit()
         
@@ -292,8 +289,8 @@ class TestWorkoutSessionComplexQueries:
     
     def test_get_personal_records(self, db_session: Session, sample_exercises):
         """Test finding personal records (max weight) for each exercise."""
-        session1 = WorkoutSession(date=date(2025, 12, 1))
-        session2 = WorkoutSession(date=date(2025, 12, 15))
+        session1 = WorkoutSession(workout_date=date(2025, 12, 1))
+        session2 = WorkoutSession(workout_date=date(2025, 12, 15))
         db_session.add_all([session1, session2])
         db_session.commit()
         

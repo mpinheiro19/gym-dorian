@@ -79,6 +79,38 @@ cd app
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+**Configuração do Banco de Dados**
+
+A aplicação utiliza Pydantic Settings para gerenciar configurações através de variáveis de ambiente.
+
+Variáveis de ambiente disponíveis:
+
+- **`DATABASE_URL`** (obrigatória): URL de conexão PostgreSQL
+  - Formato: `postgresql+psycopg2://user:password@host:port/database`
+  - Docker Compose: Automaticamente configurado como `postgresql+psycopg2://user:password@db:5432/gym_db`
+  - Local: Configure manualmente ou via arquivo `.env`
+  
+- **`ENV_STATE`** (opcional): Estado do ambiente da aplicação
+  - Valores aceitos: `development` (padrão), `staging`, `production`
+  - Docker Compose: Automaticamente configurado conforme necessário
+
+**Ordem de prioridade de configuração:**
+1. Variáveis de ambiente do sistema (usadas pelo Docker Compose) — prioridade máxima
+2. Arquivo `.env` na raiz do projeto — fallback para desenvolvimento local
+3. Valores padrão no código — última opção
+
+**Exemplo de arquivo `.env` para desenvolvimento local:**
+
+```env
+DATABASE_URL=postgresql+psycopg2://user:password@localhost:5432/gym_db
+ENV_STATE=development
+```
+
+**Validação:**
+- `DATABASE_URL` deve ser uma URL PostgreSQL válida (validada pelo Pydantic)
+- `ENV_STATE` aceita apenas: `development`, `staging`, ou `production`
+- Configurações extras são ignoradas automaticamente
+
 **Estrutura do projeto**
 
 - `app/` — código da aplicação (rotas, modelos, serviços)

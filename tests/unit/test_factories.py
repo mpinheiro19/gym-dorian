@@ -5,11 +5,8 @@ These tests verify that factory functions create valid test data.
 """
 
 import pytest
-import sys
 import os
 
-# Add parent directory to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
 from tests.fixtures.factories import (
     ExerciseFactory,
@@ -70,7 +67,7 @@ class TestWorkoutSessionFactory:
         session = WorkoutSessionFactory.create()
         
         assert session.user_id == 1
-        assert session.date == date.today()
+        assert session.workout_date == date.today()
         assert session.duration_minutes == 60
     
     def test_create_custom_session(self):
@@ -86,7 +83,7 @@ class TestWorkoutSessionFactory:
         )
         
         assert session.user_id == 2
-        assert session.date == custom_date
+        assert session.workout_date == custom_date
         assert session.duration_minutes == 90
         assert session.notes == "Heavy lifting"
     
@@ -98,7 +95,7 @@ class TestWorkoutSessionFactory:
         
         # Dates should be sequential
         for i in range(len(sessions) - 1):
-            assert sessions[i + 1].date > sessions[i].date
+            assert sessions[i + 1].workout_date > sessions[i].workout_date
     
     def test_create_session_batch_custom_start_date(self):
         """Test creating multiple sessions with custom start date."""
@@ -107,9 +104,9 @@ class TestWorkoutSessionFactory:
         start = date(2025, 12, 1)
         sessions = WorkoutSessionFactory.create_batch(3, start_date=start)
         
-        assert sessions[0].date == start
-        assert sessions[1].date == date(2025, 12, 2)
-        assert sessions[2].date == date(2025, 12, 3)
+        assert sessions[0].workout_date == start
+        assert sessions[1].workout_date == date(2025, 12, 2)
+        assert sessions[2].workout_date == date(2025, 12, 3)
 
 
 @pytest.mark.unit

@@ -1,28 +1,58 @@
-from sqlalchemy import Column, Integer, ForeignKey, Float, Text, Date
-from sqlalchemy.orm import relationship
-from datetime import datetime
-from models.base import Base
-from models.exercise import Exercise # Importa Exercise para o ForeignKey
+"""Workout logging models using SQLAlchemy 2.0 syntax."""
+from typing import Optional
+from datetime import date as date_type, datetime
+from sqlalchemy import ForeignKey, Text, Date
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from app.models.base import Base
+
 
 class WorkoutSession(Base):
+    """Represents a complete workout session.
+    
+    Attributes:
+        id: Primary key identifier
+        user_id: ID of the user who performed the workout
+        workout_date: Date when workout was performed
+        duration_minutes: Total workout duration in minutes
+        notes: Additional notes about the workout
+        exercises_done: Relationship to logged exercises in this session
+    """
     __tablename__ = 'workout_sessions'
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, index=True, default=1)
-    date = Column(Date, default=datetime.utcnow().date())
-    duration_minutes = Column(Integer, nullable=True)
-    notes = Column(Text, nullable=True)
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(index=True, default=1)
+    workout_date: Mapped[date_type] = mapped_column(Date, default=lambda: datetime.utcnow().date())
+    duration_minutes: Mapped[Optional[int]] = mapped_column(default=None)
+    notes: Mapped[Optional[str]] = mapped_column(Text(), default=None)
 
-    exercises_done = relationship("LogExercise", back_populates="session")
+    exercises_done: Mapped[list["LogExercise"]] = relationship(
+        back_populates="session",
+        cascade="all, delete-orphan"
+    )
+
 
 class LogExercise(Base):
+    """Represents a logged exercise within a workout session.
+    
+    Attributes:
+        id: Primary key identifier
+        session_id: Foreign key to WorkoutSession
+        exercise_id: Foreign key to Exercise
+        sets_completed: Number of sets completed
+        top_weight: Maximum weight used (in kg or lbs)
+        total_reps: Total repetitions across all sets
+        session: Relationship to the parent WorkoutSession
+        exercise: Relationship to the Exercise definition
+    """
     __tablename__ = 'log_exercises'
-    id = Column(Integer, primary_key=True)
-    session_id = Column(Integer, ForeignKey('workout_sessions.id'))
-    exercise_id = Column(Integer, ForeignKey('exercises.id')) 
     
-    sets_completed = Column(Integer)
-    top_weight = Column(Float)
-    total_reps = Column(Integer)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    session_id: Mapped[int] = mapped_column(ForeignKey('workout_sessions.id'))
+    exercise_id: Mapped[int] = mapped_column(ForeignKey('exercises.id'))
     
-    session = relationship("WorkoutSession", back_populates="exercises_done")
-    exercise = relationship("Exercise")
+    sets_completed: Mapped[int]
+    top_weight: Mapped[float]
+    total_reps: Mapped[int]
+    
+    session: Mapped["WorkoutSession"] = relationship(back_populates="exercises_done")
+    exercise: Mapped["Exercise"] = relationship()
