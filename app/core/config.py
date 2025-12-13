@@ -7,7 +7,7 @@ through environment variables and .env files. The configuration follows a priori
 2. .env file (fallback for local development)
 3. Default values (lowest priority)
 """
-from typing import Literal
+from typing import Literal, Optional
 from pydantic import Field, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -20,15 +20,18 @@ class Settings(BaseSettings):
         DATABASE_URL: PostgreSQL connection string. Must be a valid PostgreSQL DSN.
         ENV_STATE: Application environment state (development, staging, production).
     
-    Examples:
-        >>> settings = Settings()
-        >>> str(settings.DATABASE_URL)
-        'postgresql+psycopg2://user:password@localhost:5432/gym_db'
+    Note:
+        Do not hardcode credentials in source. `DATABASE_URL` should be provided
+        via environment variables or a local `.env` file. When not set, the
+        attribute may be `None` in development environments.
     """
     
-    DATABASE_URL: PostgresDsn = Field(
-        default="postgresql+psycopg2://user:password@localhost:5432/gym_db",
-        description="PostgreSQL database connection URL. Overridden by Docker Compose.",
+    DATABASE_URL: Optional[PostgresDsn] = Field(
+        default=None,
+        description=(
+            "PostgreSQL database connection URL. Must be provided via environment "
+            "variables or a local .env file. Avoid hardcoding credentials in source."
+        ),
     )
     
     ENV_STATE: Literal["development", "staging", "production"] = Field(

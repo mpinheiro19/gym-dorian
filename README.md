@@ -86,8 +86,8 @@ A aplicação utiliza Pydantic Settings para gerenciar configurações através 
 Variáveis de ambiente disponíveis:
 
 - **`DATABASE_URL`** (obrigatória): URL de conexão PostgreSQL
-  - Formato: `postgresql+psycopg2://user:password@host:port/database`
-  - Docker Compose: Automaticamente configurado como `postgresql+psycopg2://user:password@db:5432/gym_db`
+	- Formato: `postgresql+psycopg2://<user>:<password>@host:port/database`
+	- Docker Compose: Read from environment or a local `.env` file (`POSTGRES_*` and `DATABASE_URL`).
   - Local: Configure manualmente ou via arquivo `.env`
   
 - **`ENV_STATE`** (opcional): Estado do ambiente da aplicação
@@ -102,7 +102,7 @@ Variáveis de ambiente disponíveis:
 **Exemplo de arquivo `.env` para desenvolvimento local:**
 
 ```env
-DATABASE_URL=postgresql+psycopg2://user:password@localhost:5432/gym_db
+DATABASE_URL=postgresql+psycopg2://<user>:<password>@localhost:5432/gym_db
 ENV_STATE=development
 ```
 

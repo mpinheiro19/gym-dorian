@@ -33,8 +33,8 @@ class TestSettings:
         
         settings = Settings()
         
-        # Check defaults
-        assert str(settings.DATABASE_URL) == "postgresql+psycopg2://user:password@localhost:5432/gym_db"
+        # Check defaults - DATABASE_URL should be unset by default
+        assert settings.DATABASE_URL is None
         assert settings.ENV_STATE == "development"
     
     def test_settings_from_environment_variables(self, monkeypatch):
