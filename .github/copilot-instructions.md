@@ -6,18 +6,25 @@ Implement a Workout Tracking & Planning backend. Focus: Separation of concerns, 
 ## Directory Structure
 Maintain this layout. **Check path existence** before creating files.
 
-.
+```bash
 ├── app/
-│   ├── api/v1/         # Route handlers
-│   ├── core/           # Config (BaseSettings), Security
-│   ├── models/         # SQLAlchemy 2.0 (Mapped/mapped_column)
-│   ├── schemas/        # Pydantic v2
-│   ├── services/       # Logic & Transactions
-│   ├── database.py     # Engine, SessionLocal, get_db
-│   └── main.py         # Entrypoint
-├── alembic/            # Migrations
+│   ├── api/
+│   │   └── v1/              # Route handlers
+│   ├── core/                # Config (BaseSettings), Security
+│   ├── models/              # SQLAlchemy 2.0 (Mapped/mapped_column)
+│   ├── schemas/             # Pydantic v2
+│   ├── services/            # Logic & Transactions
+│   ├── database.py          # Engine, SessionLocal, get_db
+│   └── main.py              # Entrypoint
+├── tests/
+│   ├── unit/                # Unit tests
+│   ├── integration/         # Integration tests
+│   ├── conftest.py          # Pytest fixtures
+│   └── __init__.py
+├── alembic/                 # Migrations
 ├── docker-compose.yml
 └── requirements.txt
+```
 
 ---
 
