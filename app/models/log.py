@@ -1,30 +1,40 @@
 """Workout logging models using SQLAlchemy 2.0 syntax."""
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from datetime import date as date_type, datetime
 from sqlalchemy import ForeignKey, Text, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
 
+if TYPE_CHECKING:
+    from app.models.user import User
+
 
 class WorkoutSession(Base):
     """Represents a complete workout session.
-    
+
     Attributes:
         id: Primary key identifier
-        user_id: ID of the user who performed the workout
+        user_id: Foreign key to User who performed the workout
         workout_date: Date when workout was performed
         duration_minutes: Total workout duration in minutes
         notes: Additional notes about the workout
+        user: Relationship to User
         exercises_done: Relationship to logged exercises in this session
     """
     __tablename__ = 'workout_sessions'
-    
+
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(index=True, default=1)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey('users.id', ondelete='CASCADE'),
+        index=True,
+        nullable=False
+    )
     workout_date: Mapped[date_type] = mapped_column(Date, default=lambda: datetime.utcnow().date())
     duration_minutes: Mapped[Optional[int]] = mapped_column(default=None)
     notes: Mapped[Optional[str]] = mapped_column(Text(), default=None)
 
+    # Relationships
+    user: Mapped["User"] = relationship()
     exercises_done: Mapped[list["LogExercise"]] = relationship(
         back_populates="session",
         cascade="all, delete-orphan"
