@@ -15,7 +15,7 @@ from app.models.user import (
     GoalStatus,
 )
 from app.models.exercise import Exercise
-from app.models.log import WorkoutSession, LogExercise
+from app.models.log import WorkoutSession, LogExercise, LogSet
 
 __all__ = [
     # Base
@@ -34,4 +34,5 @@ __all__ = [
     # Workout logging models
     "WorkoutSession",
     "LogExercise",
+    "LogSet",
 ]

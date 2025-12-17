@@ -10,7 +10,7 @@ from datetime import date
 from sqlalchemy.orm import Session
 
 
-from app.models.log import WorkoutSession, LogExercise
+from app.models.log import WorkoutSession, LogExercise, LogSet
 from app.models.exercise import Exercise
 
 
@@ -39,14 +39,14 @@ class TestWorkoutSessionModel:
     
     def test_create_workout_session_with_defaults(self, db_session: Session):
         """Test creating a workout session with default values."""
-        session = WorkoutSession()
-        
+        session = WorkoutSession(user_id=1)
+
         db_session.add(session)
         db_session.commit()
         db_session.refresh(session)
-        
+
         assert session.id is not None
-        assert session.user_id == 1  # default
+        assert session.user_id == 1
         assert session.workout_date is not None  # default to current date
         assert session.duration_minutes is None
         assert session.notes is None
@@ -68,9 +68,9 @@ class TestWorkoutSessionModel:
     
     def test_query_sessions_by_date_range(self, db_session: Session):
         """Test querying workout sessions by date range."""
-        session1 = WorkoutSession(workout_date=date(2025, 12, 1))
-        session2 = WorkoutSession(workout_date=date(2025, 12, 15))
-        session3 = WorkoutSession(workout_date=date(2025, 12, 30))
+        session1 = WorkoutSession(user_id=1, workout_date=date(2025, 12, 1))
+        session2 = WorkoutSession(user_id=1, workout_date=date(2025, 12, 15))
+        session3 = WorkoutSession(user_id=1, workout_date=date(2025, 12, 30))
         
         db_session.add_all([session1, session2, session3])
         db_session.commit()
@@ -85,7 +85,7 @@ class TestWorkoutSessionModel:
     
     def test_update_workout_session(self, db_session: Session):
         """Test updating a workout session."""
-        session = WorkoutSession(duration_minutes=30, notes="Quick workout")
+        session = WorkoutSession(user_id=1, duration_minutes=30, notes="Quick workout")
         db_session.add(session)
         db_session.commit()
         
@@ -99,7 +99,7 @@ class TestWorkoutSessionModel:
     
     def test_delete_workout_session(self, db_session: Session):
         """Test deleting a workout session."""
-        session = WorkoutSession(workout_date=date(2025, 12, 11))
+        session = WorkoutSession(user_id=1, workout_date=date(2025, 12, 11))
         db_session.add(session)
         db_session.commit()
         
@@ -119,52 +119,59 @@ class TestLogExerciseModel:
     """Test suite for LogExercise model operations."""
     
     def test_create_log_exercise(self, db_session: Session, sample_exercises):
-        """Test creating a new exercise log."""
-        session = WorkoutSession(workout_date=date(2025, 12, 11))
+        """Test creating a new exercise log with sets."""
+        session = WorkoutSession(user_id=1, workout_date=date(2025, 12, 11))
         db_session.add(session)
         db_session.commit()
-        
+
         log = LogExercise(
             session_id=session.id,
-            exercise_id=sample_exercises[0].id,
-            sets_completed=3,
-            top_weight=100.0,
-            total_reps=30
+            exercise_id=sample_exercises[0].id
         )
-        
+
         db_session.add(log)
         db_session.commit()
         db_session.refresh(log)
-        
+
+        # Add sets to the log exercise
+        sets = [
+            LogSet(log_exercise_id=log.id, set_number=1, reps=10, weight=100.0),
+            LogSet(log_exercise_id=log.id, set_number=2, reps=10, weight=100.0),
+            LogSet(log_exercise_id=log.id, set_number=3, reps=10, weight=100.0),
+        ]
+        db_session.add_all(sets)
+        db_session.commit()
+
+        # Refresh to load the sets relationship
+        db_session.refresh(log)
+
         assert log.id is not None
         assert log.session_id == session.id
         assert log.exercise_id == sample_exercises[0].id
+        # Verify calculated properties
         assert log.sets_completed == 3
         assert log.top_weight == 100.0
         assert log.total_reps == 30
     
     def test_log_exercise_relationships(self, db_session: Session, sample_exercises):
         """Test relationships between LogExercise, WorkoutSession, and Exercise."""
-        session = WorkoutSession(workout_date=date(2025, 12, 11))
+        session = WorkoutSession(user_id=1, workout_date=date(2025, 12, 11))
         db_session.add(session)
         db_session.commit()
-        
+
         log = LogExercise(
             session_id=session.id,
-            exercise_id=sample_exercises[0].id,
-            sets_completed=3,
-            top_weight=100.0,
-            total_reps=30
+            exercise_id=sample_exercises[0].id
         )
-        
+
         db_session.add(log)
         db_session.commit()
         db_session.refresh(log)
-        
+
         # Test accessing session through relationship
         assert log.session.id == session.id
         assert log.session.workout_date == date(2025, 12, 11)
-        
+
         # Test accessing exercise through relationship
         assert log.exercise.id == sample_exercises[0].id
         assert log.exercise.name == "Bench Press"
@@ -193,45 +200,60 @@ class TestLogExerciseModel:
     
     def test_query_logs_by_exercise(self, db_session: Session, sample_exercises):
         """Test querying exercise logs by exercise ID."""
-        session1 = WorkoutSession(workout_date=date(2025, 12, 10))
-        session2 = WorkoutSession(workout_date=date(2025, 12, 11))
+        session1 = WorkoutSession(user_id=1, workout_date=date(2025, 12, 10))
+        session2 = WorkoutSession(user_id=1, workout_date=date(2025, 12, 11))
         db_session.add_all([session1, session2])
         db_session.commit()
-        
+
         # Log the same exercise in two different sessions
         log1 = LogExercise(
             session_id=session1.id,
-            exercise_id=sample_exercises[0].id,
-            sets_completed=3,
-            top_weight=100.0,
-            total_reps=30
+            exercise_id=sample_exercises[0].id
         )
         log2 = LogExercise(
             session_id=session2.id,
-            exercise_id=sample_exercises[0].id,
-            sets_completed=4,
-            top_weight=110.0,
-            total_reps=32
+            exercise_id=sample_exercises[0].id
         )
-        
+
         db_session.add_all([log1, log2])
         db_session.commit()
-        
+
+        # Add sets to log1 (3 sets, 100.0 weight)
+        sets1 = [
+            LogSet(log_exercise_id=log1.id, set_number=1, reps=10, weight=100.0),
+            LogSet(log_exercise_id=log1.id, set_number=2, reps=10, weight=100.0),
+            LogSet(log_exercise_id=log1.id, set_number=3, reps=10, weight=100.0),
+        ]
+        # Add sets to log2 (4 sets, 110.0 weight)
+        sets2 = [
+            LogSet(log_exercise_id=log2.id, set_number=1, reps=8, weight=110.0),
+            LogSet(log_exercise_id=log2.id, set_number=2, reps=8, weight=110.0),
+            LogSet(log_exercise_id=log2.id, set_number=3, reps=8, weight=110.0),
+            LogSet(log_exercise_id=log2.id, set_number=4, reps=8, weight=110.0),
+        ]
+        db_session.add_all(sets1 + sets2)
+        db_session.commit()
+
         logs = db_session.query(LogExercise).filter(
             LogExercise.exercise_id == sample_exercises[0].id
         ).all()
-        
+
         assert len(logs) == 2
     
     def test_update_log_exercise(self, db_session: Session, sample_workout_session):
-        """Test updating an exercise log."""
+        """Test updating an exercise log by modifying its sets."""
         log = sample_workout_session.exercises_done[0]
-        
-        log.sets_completed = 5
-        log.top_weight = 120.0
+
+        # Add two more sets to the log exercise
+        new_sets = [
+            LogSet(log_exercise_id=log.id, set_number=4, reps=10, weight=120.0),
+            LogSet(log_exercise_id=log.id, set_number=5, reps=10, weight=120.0),
+        ]
+        db_session.add_all(new_sets)
         db_session.commit()
         db_session.refresh(log)
-        
+
+        # Verify the calculated properties reflect the changes
         assert log.sets_completed == 5
         assert log.top_weight == 120.0
     
@@ -289,39 +311,48 @@ class TestWorkoutSessionComplexQueries:
     
     def test_get_personal_records(self, db_session: Session, sample_exercises):
         """Test finding personal records (max weight) for each exercise."""
-        session1 = WorkoutSession(workout_date=date(2025, 12, 1))
-        session2 = WorkoutSession(workout_date=date(2025, 12, 15))
+        session1 = WorkoutSession(user_id=1, workout_date=date(2025, 12, 1))
+        session2 = WorkoutSession(user_id=1, workout_date=date(2025, 12, 15))
         db_session.add_all([session1, session2])
         db_session.commit()
-        
+
         # Log bench press with different weights
-        logs = [
-            LogExercise(
-                session_id=session1.id,
-                exercise_id=sample_exercises[0].id,
-                sets_completed=3,
-                top_weight=100.0,
-                total_reps=30
-            ),
-            LogExercise(
-                session_id=session2.id,
-                exercise_id=sample_exercises[0].id,
-                sets_completed=3,
-                top_weight=110.0,
-                total_reps=27
-            ),
-        ]
-        
-        db_session.add_all(logs)
+        log1 = LogExercise(
+            session_id=session1.id,
+            exercise_id=sample_exercises[0].id
+        )
+        log2 = LogExercise(
+            session_id=session2.id,
+            exercise_id=sample_exercises[0].id
+        )
+
+        db_session.add_all([log1, log2])
         db_session.commit()
-        
-        # Find max weight for bench press
+
+        # Add sets to log1 (max weight 100.0)
+        sets1 = [
+            LogSet(log_exercise_id=log1.id, set_number=1, reps=10, weight=100.0),
+            LogSet(log_exercise_id=log1.id, set_number=2, reps=10, weight=100.0),
+            LogSet(log_exercise_id=log1.id, set_number=3, reps=10, weight=100.0),
+        ]
+        # Add sets to log2 (max weight 110.0)
+        sets2 = [
+            LogSet(log_exercise_id=log2.id, set_number=1, reps=9, weight=110.0),
+            LogSet(log_exercise_id=log2.id, set_number=2, reps=9, weight=110.0),
+            LogSet(log_exercise_id=log2.id, set_number=3, reps=9, weight=110.0),
+        ]
+        db_session.add_all(sets1 + sets2)
+        db_session.commit()
+
+        # Find max weight for bench press using LogSet table
         from sqlalchemy import func
-        
+
         max_weight = db_session.query(
-            func.max(LogExercise.top_weight)
+            func.max(LogSet.weight)
+        ).join(
+            LogExercise
         ).filter(
             LogExercise.exercise_id == sample_exercises[0].id
         ).scalar()
-        
+
         assert max_weight == 110.0

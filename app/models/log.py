@@ -34,7 +34,7 @@ class WorkoutSession(Base):
     notes: Mapped[Optional[str]] = mapped_column(Text(), default=None)
 
     # Relationships
-    user: Mapped["User"] = relationship()
+    user: Mapped["User"] = relationship(back_populates="workout_sessions")
     exercises_done: Mapped[list["LogExercise"]] = relationship(
         back_populates="session",
         cascade="all, delete-orphan"
@@ -43,26 +43,83 @@ class WorkoutSession(Base):
 
 class LogExercise(Base):
     """Represents a logged exercise within a workout session.
-    
+
     Attributes:
         id: Primary key identifier
         session_id: Foreign key to WorkoutSession
         exercise_id: Foreign key to Exercise
-        sets_completed: Number of sets completed
-        top_weight: Maximum weight used (in kg or lbs)
-        total_reps: Total repetitions across all sets
         session: Relationship to the parent WorkoutSession
         exercise: Relationship to the Exercise definition
+        sets: Relationship to individual sets performed
     """
     __tablename__ = 'log_exercises'
-    
+
     id: Mapped[int] = mapped_column(primary_key=True)
     session_id: Mapped[int] = mapped_column(ForeignKey('workout_sessions.id'))
     exercise_id: Mapped[int] = mapped_column(ForeignKey('exercises.id'))
-    
-    sets_completed: Mapped[int]
-    top_weight: Mapped[float]
-    total_reps: Mapped[int]
-    
+
     session: Mapped["WorkoutSession"] = relationship(back_populates="exercises_done")
     exercise: Mapped["Exercise"] = relationship()
+    sets: Mapped[list["LogSet"]] = relationship(
+        back_populates="log_exercise",
+        cascade="all, delete-orphan",
+        order_by="LogSet.set_number"
+    )
+
+    # Computed properties for backward compatibility
+    @property
+    def sets_completed(self) -> int:
+        """Calculate number of sets from sets relationship."""
+        return len(self.sets)
+
+    @property
+    def top_weight(self) -> float:
+        """Calculate maximum weight from sets."""
+        return max((s.weight for s in self.sets), default=0.0)
+
+    @property
+    def total_reps(self) -> int:
+        """Calculate total reps from sets."""
+        return sum(s.reps for s in self.sets)
+
+    @property
+    def total_volume(self) -> float:
+        """Calculate total volume (reps * weight summed across sets)."""
+        return sum(s.reps * s.weight for s in self.sets)
+
+
+class LogSet(Base):
+    """Represents a single set within a logged exercise.
+
+    Attributes:
+        id: Primary key identifier
+        log_exercise_id: Foreign key to LogExercise
+        set_number: The sequence number of this set (1, 2, 3, ...)
+        reps: Number of repetitions performed
+        weight: Weight used in this set (kg or lbs)
+        rpe: Optional Rate of Perceived Exertion (1-10 scale)
+        notes: Optional notes about this specific set
+        rest_time_seconds: Optional rest time after this set in seconds
+        log_exercise: Relationship to the parent LogExercise
+    """
+    __tablename__ = 'log_sets'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    log_exercise_id: Mapped[int] = mapped_column(
+        ForeignKey('log_exercises.id', ondelete='CASCADE'),
+        index=True,
+        nullable=False
+    )
+
+    # Required fields
+    set_number: Mapped[int] = mapped_column(nullable=False)
+    reps: Mapped[int] = mapped_column(nullable=False)
+    weight: Mapped[float] = mapped_column(nullable=False)
+
+    # Optional fields
+    rpe: Mapped[Optional[int]] = mapped_column(default=None)
+    notes: Mapped[Optional[str]] = mapped_column(Text(), default=None)
+    rest_time_seconds: Mapped[Optional[int]] = mapped_column(default=None)
+
+    # Relationships
+    log_exercise: Mapped["LogExercise"] = relationship(back_populates="sets")

@@ -4,7 +4,7 @@ from datetime import date, datetime
 from sqlalchemy import func, and_
 from sqlalchemy.orm import Session, joinedload
 
-from app.models.log import WorkoutSession, LogExercise
+from app.models.log import WorkoutSession, LogExercise, LogSet
 from app.models.exercise import Exercise
 from app.schemas.workout_schema import (
     WorkoutSessionCreate,
@@ -14,6 +14,7 @@ from app.schemas.workout_schema import (
     ExerciseCreate,
     ExerciseUpdate,
     QuickWorkoutLog,
+    SetDetail,
 )
 
 
@@ -119,6 +120,32 @@ def delete_exercise(db: Session, exercise: Exercise) -> None:
 
 
 # ===========================
+# Helper Functions
+# ===========================
+
+def _create_sets_for_exercise(db: Session, log_exercise_id: int, sets: List[SetDetail]) -> None:
+    """
+    Create LogSet records for a LogExercise.
+
+    Args:
+        db: Database session
+        log_exercise_id: LogExercise ID
+        sets: List of set details to create
+    """
+    for set_data in sets:
+        log_set = LogSet(
+            log_exercise_id=log_exercise_id,
+            set_number=set_data.set_number,
+            reps=set_data.reps,
+            weight=set_data.weight,
+            rpe=set_data.rpe,
+            notes=set_data.notes,
+            rest_time_seconds=getattr(set_data, 'rest_time_seconds', None)
+        )
+        db.add(log_set)
+
+
+# ===========================
 # Workout Session CRUD
 # ===========================
 
@@ -172,7 +199,8 @@ def get_workout_session_by_id(
         Optional[WorkoutSession]: Workout session or None
     """
     return db.query(WorkoutSession).options(
-        joinedload(WorkoutSession.exercises_done).joinedload(LogExercise.exercise)
+        joinedload(WorkoutSession.exercises_done).joinedload(LogExercise.exercise),
+        joinedload(WorkoutSession.exercises_done).joinedload(LogExercise.sets)
     ).filter(
         WorkoutSession.id == workout_id,
         WorkoutSession.user_id == user_id
@@ -205,16 +233,17 @@ def create_workout_session(
     db.add(workout)
     db.flush()  # Flush to get workout.id
 
-    # Add exercises
+    # Add exercises with sets
     for exercise_data in workout_in.exercises:
         log_exercise = LogExercise(
             session_id=workout.id,
-            exercise_id=exercise_data.exercise_id,
-            sets_completed=exercise_data.sets_completed,
-            top_weight=exercise_data.top_weight,
-            total_reps=exercise_data.total_reps
+            exercise_id=exercise_data.exercise_id
         )
         db.add(log_exercise)
+        db.flush()  # Flush to get log_exercise.id
+
+        # Create sets for this exercise
+        _create_sets_for_exercise(db, log_exercise.id, exercise_data.sets)
 
     db.commit()
     db.refresh(workout)
@@ -228,8 +257,6 @@ def create_quick_workout(
 ) -> WorkoutSession:
     """
     Quick workout logging from sets data.
-
-    Automatically calculates sets_completed, top_weight, and total_reps from sets.
 
     Args:
         db: Database session
@@ -251,19 +278,15 @@ def create_quick_workout(
 
     # Process each exercise
     for exercise_data in quick_log.exercises:
-        # Calculate aggregates from sets
-        sets_count = len(exercise_data.sets)
-        top_weight = max(s.weight for s in exercise_data.sets)
-        total_reps = sum(s.reps for s in exercise_data.sets)
-
         log_exercise = LogExercise(
             session_id=workout.id,
-            exercise_id=exercise_data.exercise_id,
-            sets_completed=sets_count,
-            top_weight=top_weight,
-            total_reps=total_reps
+            exercise_id=exercise_data.exercise_id
         )
         db.add(log_exercise)
+        db.flush()  # Flush to get log_exercise.id
+
+        # Create sets directly
+        _create_sets_for_exercise(db, log_exercise.id, exercise_data.sets)
 
     db.commit()
     db.refresh(workout)
@@ -338,16 +361,27 @@ def copy_workout_session(
     db.add(new_workout)
     db.flush()
 
-    # Copy exercises
+    # Copy exercises and their sets
     for log_exercise in source_workout.exercises_done:
         new_log = LogExercise(
             session_id=new_workout.id,
-            exercise_id=log_exercise.exercise_id,
-            sets_completed=log_exercise.sets_completed,
-            top_weight=log_exercise.top_weight,
-            total_reps=log_exercise.total_reps
+            exercise_id=log_exercise.exercise_id
         )
         db.add(new_log)
+        db.flush()  # Flush to get new_log.id
+
+        # Copy all sets from source exercise
+        for source_set in log_exercise.sets:
+            new_set = LogSet(
+                log_exercise_id=new_log.id,
+                set_number=source_set.set_number,
+                reps=source_set.reps,
+                weight=source_set.weight,
+                rpe=source_set.rpe,
+                notes=source_set.notes,
+                rest_time_seconds=source_set.rest_time_seconds
+            )
+            db.add(new_set)
 
     db.commit()
     db.refresh(new_workout)
@@ -376,9 +410,14 @@ def add_exercise_to_workout(
     """
     log_exercise = LogExercise(
         session_id=workout_id,
-        **exercise_in.model_dump()
+        exercise_id=exercise_in.exercise_id
     )
     db.add(log_exercise)
+    db.flush()  # Flush to get log_exercise.id
+
+    # Create sets for this exercise
+    _create_sets_for_exercise(db, log_exercise.id, exercise_in.sets)
+
     db.commit()
     db.refresh(log_exercise)
     return log_exercise
@@ -400,10 +439,19 @@ def update_logged_exercise(
     Returns:
         LogExercise: Updated exercise log
     """
-    update_data = exercise_in.model_dump(exclude_unset=True)
+    # Update exercise_id if provided
+    if exercise_in.exercise_id is not None:
+        log_exercise.exercise_id = exercise_in.exercise_id
 
-    for field, value in update_data.items():
-        setattr(log_exercise, field, value)
+    # Update sets if provided
+    if exercise_in.sets is not None:
+        # Delete existing sets
+        db.query(LogSet).filter(
+            LogSet.log_exercise_id == log_exercise.id
+        ).delete()
+
+        # Create new sets
+        _create_sets_for_exercise(db, log_exercise.id, exercise_in.sets)
 
     db.commit()
     db.refresh(log_exercise)
@@ -479,10 +527,10 @@ def get_workout_stats(
     total_duration = sum(w.duration_minutes or 0 for w in workouts)
     total_exercises = sum(len(w.exercises_done) for w in workouts)
 
-    # Calculate total volume
+    # Calculate total volume from individual sets
     total_volume = db.query(
-        func.sum(LogExercise.total_reps * LogExercise.top_weight)
-    ).join(WorkoutSession).filter(
+        func.sum(LogSet.reps * LogSet.weight)
+    ).join(LogExercise).join(WorkoutSession).filter(
         WorkoutSession.user_id == user_id
     )
 

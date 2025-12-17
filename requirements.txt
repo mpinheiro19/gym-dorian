@@ -19,7 +19,7 @@ alembic>=1.10
 
 # Authentication / Password hashing
 passlib[bcrypt]>=1.7
-bcrypt<5.0,>=4.0  # Pin to 4.x for passlib compatibility
+bcrypt==3.2.2  # Pinned to 3.2.2 for full passlib compatibility
 python-jose[cryptography]>=3.3  # For JWT tokens
 python-multipart>=0.0.5  # For form data parsing
 

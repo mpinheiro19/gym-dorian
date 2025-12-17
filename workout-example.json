@@ -1,0 +1,122 @@
+{
+  "routine_name": "PPL Otimizado 4 Meses (Periodizado)",
+  "frequency": "6x Semana (PPL x2)",
+  "focus": "Força/Hipertrofia Eficiente + Condicionamento Aeróbico",
+  "periodization_plan": {
+    "macrocycle_duration": "4 Months",
+    "mesocycles": [
+      {
+        "month": 1,
+        "focus": "Acúmulo e Adaptação",
+        "rep_target": "8-10 Reps",
+        "goal": "Aprimorar a técnica e estabelecer a carga inicial (Progressão em Repetições)."
+      },
+      {
+        "month": 2,
+        "focus": "Intensificação (Força Máxima)",
+        "rep_target": "6-8 Reps",
+        "goal": "Aumentar a carga, diminuir ligeiramente o volume (Progressão em Carga)."
+      },
+      {
+        "month": 3,
+        "focus": "Volume e Hipertrofia",
+        "rep_target": "8-12 Reps",
+        "goal": "Maximizar o estresse metabólico (Aumentar 1 série nos acessórios)."
+      },
+      {
+        "month": 4,
+        "focus": "Descarregamento (Deload)",
+        "rep_target": "8 Reps",
+        "goal": "Redução de 50% no volume de séries e 70% da carga habitual. Preparação para o próximo ciclo."
+      }
+    ]
+  },
+  "days": [
+    {
+      "day": "Monday",
+      "type": "PUSH (Peito, Ombro, Tríceps)",
+      "duration_minutes": 60,
+      "exercises": [
+        { "exercise": "Seated Bench Press Machine", "sets": 4, "reps_range": "Variavel (6-10)", "progress_instruction": "Aplicar a Sobrecarga Progressiva semanalmente (Aumentar peso ou Reps)." },
+        { "exercise": "Shoulder Press Machine", "sets": 3, "reps_range": "Variavel (6-10)", "progress_instruction": "Aplicar a Sobrecarga Progressiva semanalmente (Aumentar peso ou Reps)." },
+        { "exercise": "Chest Fly Machine", "sets": 3, "reps_range": "10-15", "progress_instruction": "Foco na conexão mente-músculo e manutenção da tensão." },
+        { "exercise": "Dumbbell Lateral Raise", "sets": 3, "reps_range": "10-15", "progress_instruction": "Progressão em Carga ou Técnica (Pausas no topo)." },
+        { "exercise": "Triceps Press Machine", "sets": 3, "reps_range": "8-12", "progress_instruction": "Manter a estabilidade do cotovelo, aumentar a carga gradualmente (Mês 2)." }
+      ],
+      "cardio": { "type": "None" }
+    },
+    {
+      "day": "Tuesday",
+      "type": "LEGS (Quadríceps, Isquiotibiais, Panturrilhas)",
+      "duration_minutes": 60,
+      "exercises": [
+        { "exercise": "Machine Squats", "sets": 4, "reps_range": "Variavel (6-10)", "progress_instruction": "Aumentar a carga priorizando o Mês 2. Mantenha a amplitude controlada." },
+        { "exercise": "Legs Extension", "sets": 3, "reps_range": "10-15", "progress_instruction": "Progressão em Reps ou Carga. Foco no pico de contração." },
+        { "exercise": "Seated Leg Curl", "sets": 3, "reps_range": "10-15", "progress_instruction": "Progressão em Reps ou Carga. Foco na fase excêntrica." },
+        { "exercise": "Good Mornings", "sets": 3, "reps_range": "8-12", "progress_instruction": "Aumentar a carga, mantendo a curvatura natural da coluna (Mês 2)." },
+        { "exercise": "Calf Raise", "sets": 3, "reps_range": "12-20", "progress_instruction": "Progressão por Aumento de Reps e Amplitude." }
+      ],
+      "cardio": { "type": "LISS (Low-Intensity Steady State)", "duration_minutes": 20, "intensity": "Moderada (Zona 2)" }
+    },
+    {
+      "day": "Wednesday",
+      "type": "PULL (Costas, Trapézio, Bíceps)",
+      "duration_minutes": 60,
+      "exercises": [
+        { "exercise": "Vertical Pull pronated grip", "sets": 4, "reps_range": "Variavel (6-10)", "progress_instruction": "Aplicar a Sobrecarga Progressiva semanalmente." },
+        { "exercise": "Seated Rows neutral grip", "sets": 3, "reps_range": "8-12", "progress_instruction": "Foco na retração escapular e progressão em carga." },
+        { "exercise": "Reverse Crucifix machine", "sets": 3, "reps_range": "10-15", "progress_instruction": "Progressão por reps e pico de contração." },
+        { "exercise": "Biceps Curl Machine", "sets": 3, "reps_range": "10-15", "progress_instruction": "Progressão em Carga ou Reps. Sem *swing*." },
+        { "exercise": "Dumbbell Hammer Curl", "sets": 3, "reps_range": "8-12", "progress_instruction": "Progressão em Carga. Benefício para o antebraço." }
+      ],
+      "cardio": { "type": "None" }
+    },
+    {
+      "day": "Thursday",
+      "type": "PUSH (Peito, Ombro, Tríceps)",
+      "duration_minutes": 60,
+      "exercises": [
+        { "exercise": "Seated Bench Press Machine", "sets": 4, "reps_range": "Variavel (6-10)", "progress_instruction": "Priorizar o aumento de carga (Mês 2)." },
+        { "exercise": "Shoulder Press Machine", "sets": 3, "reps_range": "Variavel (6-10)", "progress_instruction": "Priorizar o aumento de carga (Mês 2)." },
+        { "exercise": "Dumbbell Lateral Raise", "sets": 3, "reps_range": "10-15", "progress_instruction": "Progressão em Carga ou Técnica." },
+        { "exercise": "Triceps Cables", "sets": 3, "reps_range": "10-15", "progress_instruction": "Usar menos carga que a máquina, focar na sensação e no alongamento." }
+      ],
+      "cardio": { "type": "LISS (Low-Intensity Steady State)", "duration_minutes": 20, "intensity": "Moderada (Zona 2)" }
+    },
+    {
+      "day": "Friday",
+      "type": "LEGS (Quadríceps, Isquiotibiais, Panturrilhas)",
+      "duration_minutes": 60,
+      "exercises": [
+        { "exercise": "Dumbbell RDLs", "sets": 4, "reps_range": "8-12", "progress_instruction": "Foco na progressão da carga e alongamento dos Isquiotibiais." },
+        { "exercise": "Legs Extension", "sets": 3, "reps_range": "10-15", "progress_instruction": "Progressão em Reps ou Carga." },
+        { "exercise": "Seated Leg Curl", "sets": 3, "reps_range": "10-15", "progress_instruction": "Progressão em Reps ou Carga." },
+        { "exercise": "Calf Raise", "sets": 3, "reps_range": "12-20", "progress_instruction": "Progressão por Aumento de Reps e Amplitude." },
+        { "exercise": "Abdominal Machine Crunch", "sets": 3, "reps_range": "12-15", "progress_instruction": "Foco na contração máxima." }
+      ],
+      "cardio": { "type": "None" }
+    },
+    {
+      "day": "Saturday",
+      "type": "PULL (Costas, Trapézio, Bíceps)",
+      "duration_minutes": 60,
+      "exercises": [
+        { "exercise": "Pullup triangle", "sets": 4, "reps_range": "Max Reps/6-10", "progress_instruction": "Progredir adicionando peso (Mês 2) ou aumentando as repetições totais." },
+        { "exercise": "Seated Rows pronated grip", "sets": 3, "reps_range": "8-12", "progress_instruction": "Foco no controle da fase excêntrica e progressão em carga." },
+        { "exercise": "Reverse Crucifix machine", "sets": 3, "reps_range": "10-15", "progress_instruction": "Progressão por reps e pico de contração." },
+        { "exercise": "Biceps Curl Machine", "sets": 3, "reps_range": "10-15", "progress_instruction": "Progressão em Carga ou Reps." },
+        { "exercise": "Dumbbell Hammer Curl", "sets": 3, "reps_range": "8-12", "progress_instruction": "Progressão em Carga." }
+      ],
+      "cardio": { "type": "LISS (Low-Intensity Steady State)", "duration_minutes": 20, "intensity": "Moderada (Zona 2)" }
+    },
+    {
+      "day": "Sunday",
+      "type": "REST/Performance",
+      "duration_minutes": 0,
+      "exercises": [
+        { "exercise": "Descanso Ativo" }
+      ],
+      "cardio": { "type": "HIIT (High-Intensity Interval Training)", "duration_minutes": "10-15 (real time de trabalho)", "intensity": "Alta (Máximo Esforço)" }
+    }
+  ]
+}

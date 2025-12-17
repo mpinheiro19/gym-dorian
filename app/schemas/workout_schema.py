@@ -38,32 +38,30 @@ class ExerciseResponse(ExerciseBase):
 # Log Exercise Schemas
 # ===========================
 
-class LogExerciseBase(BaseModel):
-    """Base schema for LogExercise."""
-    exercise_id: int = Field(..., gt=0)
-    sets_completed: int = Field(..., ge=1, le=100, description="Number of sets")
-    top_weight: float = Field(..., ge=0, description="Maximum weight used (kg)")
-    total_reps: int = Field(..., ge=1, description="Total reps across all sets")
-
-
-class LogExerciseCreate(LogExerciseBase):
+class LogExerciseCreate(BaseModel):
     """Schema for creating a log exercise entry."""
-    pass
+    exercise_id: int = Field(..., gt=0)
+    sets: List['SetDetail'] = Field(..., min_length=1)
 
 
 class LogExerciseUpdate(BaseModel):
     """Schema for updating a log exercise entry."""
     exercise_id: Optional[int] = Field(None, gt=0)
-    sets_completed: Optional[int] = Field(None, ge=1, le=100)
-    top_weight: Optional[float] = Field(None, ge=0)
-    total_reps: Optional[int] = Field(None, ge=1)
+    sets: Optional[List['SetDetail']] = Field(None, min_length=1)
 
 
-class LogExerciseResponse(LogExerciseBase):
+class LogExerciseResponse(BaseModel):
     """Schema for LogExercise in API responses."""
     id: int
     session_id: int
     exercise: ExerciseResponse
+    sets: List['SetDetailResponse'] = []
+
+    # Computed fields (from model properties)
+    sets_completed: int
+    top_weight: float
+    total_reps: int
+    total_volume: float
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -74,16 +72,20 @@ class LogExerciseResponse(LogExerciseBase):
 
 class SetDetail(BaseModel):
     """Individual set details (for more granular tracking)."""
-    set_number: int = Field(..., ge=1)
-    reps: int = Field(..., ge=1)
-    weight: float = Field(..., ge=0)
+    set_number: int = Field(..., ge=1, le=100)
+    reps: int = Field(..., ge=1, le=1000)
+    weight: float = Field(..., ge=0, le=10000)
     rpe: Optional[int] = Field(None, ge=1, le=10, description="Rate of Perceived Exertion (1-10)")
     notes: Optional[str] = Field(None, max_length=500)
+    rest_time_seconds: Optional[int] = Field(None, ge=0, le=3600, description="Rest time after set in seconds")
 
 
-class LogExerciseWithSets(LogExerciseCreate):
-    """Log exercise with individual set details."""
-    sets: List[SetDetail] = Field(..., min_length=1)
+class SetDetailResponse(SetDetail):
+    """Set detail with database ID for responses."""
+    id: int
+    log_exercise_id: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ===========================
@@ -179,7 +181,7 @@ class WorkoutTemplate(BaseModel):
     """Workout template for reusable routines."""
     name: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = Field(None, max_length=1000)
-    exercises: List[LogExerciseBase]
+    exercises: List[LogExerciseCreate]
 
 
 class WorkoutTemplateResponse(WorkoutTemplate):

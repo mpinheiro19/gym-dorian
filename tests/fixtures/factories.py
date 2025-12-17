@@ -11,7 +11,7 @@ from typing import Optional
 
 
 from app.models.exercise import Exercise
-from app.models.log import WorkoutSession, LogExercise
+from app.models.log import WorkoutSession, LogExercise, LogSet
 
 
 class ExerciseFactory:
@@ -127,60 +127,120 @@ class WorkoutSessionFactory:
 
 class LogExerciseFactory:
     """Factory for creating LogExercise test instances."""
-    
+
     @staticmethod
     def create(
         session_id: int,
-        exercise_id: int,
-        sets_completed: int = 3,
-        top_weight: float = 100.0,
-        total_reps: int = 30
+        exercise_id: int
     ) -> LogExercise:
         """
         Create a LogExercise instance.
-        
+
+        Note: This creates the LogExercise without sets.
+        Use LogSetFactory to create sets for this exercise.
+
         Args:
             session_id: Workout session ID
             exercise_id: Exercise ID
-            sets_completed: Number of sets
-            top_weight: Heaviest weight used
-            total_reps: Total repetitions
-            
+
         Returns:
             LogExercise: New exercise log instance
         """
         return LogExercise(
             session_id=session_id,
-            exercise_id=exercise_id,
-            sets_completed=sets_completed,
-            top_weight=top_weight,
-            total_reps=total_reps
+            exercise_id=exercise_id
         )
-    
+
     @staticmethod
     def create_batch(
         session_id: int,
-        exercise_ids: list[int],
-        base_weight: float = 100.0
+        exercise_ids: list[int]
     ) -> list[LogExercise]:
         """
         Create multiple exercise log instances for a session.
-        
+
+        Note: This creates LogExercise instances without sets.
+        Use LogSetFactory to create sets for these exercises.
+
         Args:
             session_id: Workout session ID
             exercise_ids: List of exercise IDs
-            base_weight: Base weight (will increment for each exercise)
-            
+
         Returns:
             list[LogExercise]: List of exercise log instances
         """
         return [
             LogExercise(
                 session_id=session_id,
-                exercise_id=exercise_id,
-                sets_completed=3 + (i % 2),
-                top_weight=base_weight + (i * 10),
-                total_reps=30 + (i * 2)
+                exercise_id=exercise_id
             )
-            for i, exercise_id in enumerate(exercise_ids)
+            for exercise_id in exercise_ids
+        ]
+
+
+class LogSetFactory:
+    """Factory for creating LogSet test instances."""
+
+    @staticmethod
+    def create(
+        log_exercise_id: int,
+        set_number: int = 1,
+        reps: int = 10,
+        weight: float = 100.0,
+        rpe: Optional[int] = None,
+        notes: Optional[str] = None,
+        rest_time_seconds: Optional[int] = None
+    ) -> LogSet:
+        """
+        Create a LogSet instance.
+
+        Args:
+            log_exercise_id: LogExercise ID
+            set_number: Set sequence number
+            reps: Number of repetitions
+            weight: Weight used
+            rpe: Rate of Perceived Exertion (1-10)
+            notes: Set-specific notes
+            rest_time_seconds: Rest time after set
+
+        Returns:
+            LogSet: New set instance
+        """
+        return LogSet(
+            log_exercise_id=log_exercise_id,
+            set_number=set_number,
+            reps=reps,
+            weight=weight,
+            rpe=rpe,
+            notes=notes,
+            rest_time_seconds=rest_time_seconds
+        )
+
+    @staticmethod
+    def create_batch(
+        log_exercise_id: int,
+        count: int = 3,
+        base_weight: float = 100.0,
+        base_reps: int = 10
+    ) -> list[LogSet]:
+        """
+        Create multiple set instances for a logged exercise.
+
+        Args:
+            log_exercise_id: LogExercise ID
+            count: Number of sets to create
+            base_weight: Starting weight (remains constant by default)
+            base_reps: Starting reps (remains constant by default)
+
+        Returns:
+            list[LogSet]: List of set instances
+        """
+        return [
+            LogSet(
+                log_exercise_id=log_exercise_id,
+                set_number=i + 1,
+                reps=base_reps,
+                weight=base_weight
+            )
+            for i in range(count)
         ]

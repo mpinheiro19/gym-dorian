@@ -69,6 +69,7 @@ class User(Base):
         cascade="all, delete-orphan"
     )
     workout_sessions: Mapped[list["WorkoutSession"]] = relationship(
+        back_populates="user",
         cascade="all, delete-orphan"
     )
 

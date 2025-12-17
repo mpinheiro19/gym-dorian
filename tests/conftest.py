@@ -18,7 +18,7 @@ from app.database import get_db
 from app.main import app
 from app.models.base import Base
 from app.models.exercise import Exercise
-from app.models.log import WorkoutSession, LogExercise
+from app.models.log import WorkoutSession, LogExercise, LogSet
 
 
 # Use in-memory SQLite for tests (fast and isolated)
@@ -158,28 +158,39 @@ def sample_workout_session(db_session: Session, sample_exercises: list[Exercise]
     db_session.refresh(session)
     
     # Add exercise logs
-    log_exercises = [
-        LogExercise(
-            session_id=session.id,
-            exercise_id=sample_exercises[0].id,
-            sets_completed=3,
-            top_weight=100.0,
-            total_reps=30
-        ),
-        LogExercise(
-            session_id=session.id,
-            exercise_id=sample_exercises[1].id,
-            sets_completed=4,
-            top_weight=150.0,
-            total_reps=32
-        ),
+    log_exercise1 = LogExercise(
+        session_id=session.id,
+        exercise_id=sample_exercises[0].id
+    )
+    log_exercise2 = LogExercise(
+        session_id=session.id,
+        exercise_id=sample_exercises[1].id
+    )
+
+    db_session.add(log_exercise1)
+    db_session.add(log_exercise2)
+    db_session.flush()
+
+    # Add sets for first exercise (3 sets of 10 reps @ 100kg)
+    sets1 = [
+        LogSet(log_exercise_id=log_exercise1.id, set_number=1, reps=10, weight=100.0),
+        LogSet(log_exercise_id=log_exercise1.id, set_number=2, reps=10, weight=100.0),
+        LogSet(log_exercise_id=log_exercise1.id, set_number=3, reps=10, weight=100.0),
     ]
-    
-    db_session.add_all(log_exercises)
+
+    # Add sets for second exercise (4 sets of 8 reps @ 150kg)
+    sets2 = [
+        LogSet(log_exercise_id=log_exercise2.id, set_number=1, reps=8, weight=150.0),
+        LogSet(log_exercise_id=log_exercise2.id, set_number=2, reps=8, weight=150.0),
+        LogSet(log_exercise_id=log_exercise2.id, set_number=3, reps=8, weight=150.0),
+        LogSet(log_exercise_id=log_exercise2.id, set_number=4, reps=8, weight=150.0),
+    ]
+
+    db_session.add_all(sets1 + sets2)
     db_session.commit()
-    
+
     db_session.refresh(session)
-    
+
     return session
 
 
