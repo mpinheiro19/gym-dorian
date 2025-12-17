@@ -8,14 +8,11 @@ from alembic import context
 # Adiciona o diretório atual ao sys.path para importar o app
 sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Adiciona o diretório app ao sys.path
-sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'app')))
-
 # Importa a configuração e os modelos
-from core.config import settings
-from models.base import Base
+from app.core.config import settings
+from app.models.base import Base
 # Importa todos os modelos para garantir que sejam registrados no metadata
-from models import exercise, log, plan
+from app.models import User, UserSettings, UserGoal, Exercise, WorkoutSession, LogExercise
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -38,7 +35,7 @@ target_metadata = Base.metadata
 
 def get_url():
     """Retorna a URL do banco de dados das configurações"""
-    return settings.DATABASE_URL
+    return str(settings.DATABASE_URL)
 
 
 def run_migrations_offline() -> None:

@@ -1,0 +1,537 @@
+{
+	"info": {
+		"_postman_id": "gym-dorian-bulk-insert-workout",
+		"name": "Gym Dorian - Bulk Insert Workout",
+		"description": "Collection for bulk inserting workout sessions with exercises and sets tracking at set level",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has user data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('email');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePassword123!\",\n  \"full_name\": \"John Doe\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new user account. Use this only once, then use Login."
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has access_token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('access_token');",
+									"    pm.expect(jsonData).to.have.property('token_type');",
+									"    ",
+									"    // Save token to environment variable",
+									"    pm.environment.set(\"access_token\", jsonData.access_token);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "{{user_email}}",
+									"description": "User email (acts as username)",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{user_password}}",
+									"description": "User password",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with email and password to get JWT access token. The token is automatically saved to the environment variable 'access_token'."
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints for user registration and login"
+		},
+		{
+			"name": "Exercises",
+			"item": [
+				{
+					"name": "List Exercises",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/workouts/exercises?limit=100",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"workouts",
+								"exercises"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "100"
+								},
+								{
+									"key": "muscle_group",
+									"value": "Chest",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "bench",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get list of available exercises. You need exercise IDs from this endpoint to create workout sessions."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Exercise",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has exercise data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('name');",
+									"    ",
+									"    // Optionally save exercise_id for later use",
+									"    pm.environment.set(\"last_exercise_id\", jsonData.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Bench Press\",\n  \"muscle_group\": \"Chest\",\n  \"equipment_type\": \"Barbell\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/workouts/exercises",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"workouts",
+								"exercises"
+							]
+						},
+						"description": "Create a new exercise. Use this to add exercises to the database before logging workouts."
+					},
+					"response": []
+				}
+			],
+			"description": "Exercise management endpoints"
+		},
+		{
+			"name": "Workout Sessions",
+			"item": [
+				{
+					"name": "Bulk Insert - Complete Workout Session",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has workout session data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('user_id');",
+									"    pm.expect(jsonData).to.have.property('exercises_done');",
+									"    pm.expect(jsonData.exercises_done).to.be.an('array');",
+									"    ",
+									"    // Save workout_id for later use",
+									"    pm.environment.set(\"last_workout_id\", jsonData.id);",
+									"});",
+									"",
+									"pm.test(\"Exercises have sets tracked\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    jsonData.exercises_done.forEach(function(exercise) {",
+									"        pm.expect(exercise).to.have.property('sets');",
+									"        pm.expect(exercise.sets).to.be.an('array');",
+									"        pm.expect(exercise).to.have.property('sets_completed');",
+									"        pm.expect(exercise).to.have.property('top_weight');",
+									"        pm.expect(exercise).to.have.property('total_reps');",
+									"        pm.expect(exercise).to.have.property('total_volume');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"workout_date\": \"2025-12-17\",\n  \"duration_minutes\": 90,\n  \"notes\": \"Chest and triceps day - feeling strong!\",\n  \"exercises\": [\n    {\n      \"exercise_id\": 1,\n      \"sets\": [\n        {\n          \"set_number\": 1,\n          \"reps\": 10,\n          \"weight\": 100.0,\n          \"rpe\": 7,\n          \"notes\": \"Warm-up set\",\n          \"rest_time_seconds\": 120\n        },\n        {\n          \"set_number\": 2,\n          \"reps\": 8,\n          \"weight\": 110.0,\n          \"rpe\": 8,\n          \"notes\": \"Increasing weight\",\n          \"rest_time_seconds\": 150\n        },\n        {\n          \"set_number\": 3,\n          \"reps\": 6,\n          \"weight\": 120.0,\n          \"rpe\": 9,\n          \"notes\": \"Top set - heavy!\",\n          \"rest_time_seconds\": 180\n        },\n        {\n          \"set_number\": 4,\n          \"reps\": 8,\n          \"weight\": 110.0,\n          \"rpe\": 8,\n          \"notes\": \"Drop set\",\n          \"rest_time_seconds\": 120\n        }\n      ]\n    },\n    {\n      \"exercise_id\": 2,\n      \"sets\": [\n        {\n          \"set_number\": 1,\n          \"reps\": 12,\n          \"weight\": 40.0,\n          \"rpe\": 6,\n          \"rest_time_seconds\": 90\n        },\n        {\n          \"set_number\": 2,\n          \"reps\": 10,\n          \"weight\": 45.0,\n          \"rpe\": 7,\n          \"rest_time_seconds\": 90\n        },\n        {\n          \"set_number\": 3,\n          \"reps\": 10,\n          \"weight\": 45.0,\n          \"rpe\": 8,\n          \"rest_time_seconds\": 90\n        }\n      ]\n    },\n    {\n      \"exercise_id\": 3,\n      \"sets\": [\n        {\n          \"set_number\": 1,\n          \"reps\": 15,\n          \"weight\": 20.0,\n          \"rpe\": 7,\n          \"rest_time_seconds\": 60\n        },\n        {\n          \"set_number\": 2,\n          \"reps\": 12,\n          \"weight\": 22.5,\n          \"rpe\": 8,\n          \"rest_time_seconds\": 60\n        },\n        {\n          \"set_number\": 3,\n          \"reps\": 10,\n          \"weight\": 25.0,\n          \"rpe\": 9,\n          \"rest_time_seconds\": 60\n        }\n      ]\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/workouts/sessions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"workouts",
+								"sessions"
+							]
+						},
+						"description": "**BULK INSERT WORKOUT SESSION**\n\nCreate a complete workout session with multiple exercises and detailed set-level tracking in a single request.\n\n**Key Features:**\n- User identification via JWT token (automatically added from login)\n- Create workout session with date, duration, and notes\n- Add multiple exercises with detailed set tracking\n- Track per-set metrics: reps, weight, RPE, notes, rest time\n- System automatically calculates: sets_completed, top_weight, total_reps, total_volume\n\n**Request Body Structure:**\n```json\n{\n  \"workout_date\": \"YYYY-MM-DD\",\n  \"duration_minutes\": integer (optional),\n  \"notes\": \"string\" (optional),\n  \"exercises\": [\n    {\n      \"exercise_id\": integer (required),\n      \"sets\": [\n        {\n          \"set_number\": integer (1-100),\n          \"reps\": integer (1-1000),\n          \"weight\": float (0-10000),\n          \"rpe\": integer (1-10, optional),\n          \"notes\": \"string\" (optional),\n          \"rest_time_seconds\": integer (0-3600, optional)\n        }\n      ]\n    }\n  ]\n}\n```\n\n**Before Using:**\n1. Run \"Login\" request to get authentication token\n2. Run \"List Exercises\" to get valid exercise IDs\n3. Update exercise_id values in the request body\n\n**Example Scenario:**\nThis example logs a chest and triceps workout with:\n- Exercise 1 (e.g., Bench Press): 4 sets with progressive overload\n- Exercise 2 (e.g., Incline Dumbbell Press): 3 sets\n- Exercise 3 (e.g., Tricep Pushdown): 3 sets\n\n**Response:**\nReturns the complete workout session with:\n- Workout session ID\n- User ID (from token)\n- All exercises with calculated metrics\n- Individual set details for each exercise"
+					},
+					"response": []
+				},
+				{
+					"name": "List My Workout Sessions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/workouts/sessions?limit=50",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"workouts",
+								"sessions"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "50"
+								},
+								{
+									"key": "start_date",
+									"value": "2025-12-01",
+									"disabled": true
+								},
+								{
+									"key": "end_date",
+									"value": "2025-12-31",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get all workout sessions for the authenticated user (ordered by date, most recent first)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Workout Session by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/workouts/sessions/{{last_workout_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"workouts",
+								"sessions",
+								"{{last_workout_id}}"
+							]
+						},
+						"description": "Get a specific workout session with all exercises and sets details."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Workout Session",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"duration_minutes\": 95,\n  \"notes\": \"Chest and triceps day - feeling strong! Updated: Added extra time for stretching.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/workouts/sessions/{{last_workout_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"workouts",
+								"sessions",
+								"{{last_workout_id}}"
+							]
+						},
+						"description": "Update workout session metadata (date, duration, notes). To modify exercises, use the exercise-specific endpoints."
+					},
+					"response": []
+				},
+				{
+					"name": "Add Exercise to Existing Session",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"exercise_id\": 4,\n  \"sets\": [\n    {\n      \"set_number\": 1,\n      \"reps\": 12,\n      \"weight\": 30.0,\n      \"rpe\": 7,\n      \"rest_time_seconds\": 60\n    },\n    {\n      \"set_number\": 2,\n      \"reps\": 10,\n      \"weight\": 32.5,\n      \"rpe\": 8,\n      \"rest_time_seconds\": 60\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/workouts/sessions/{{last_workout_id}}/exercises",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"workouts",
+								"sessions",
+								"{{last_workout_id}}",
+								"exercises"
+							]
+						},
+						"description": "Add an additional exercise to an existing workout session."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Workout Session",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/workouts/sessions/{{last_workout_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"workouts",
+								"sessions",
+								"{{last_workout_id}}"
+							]
+						},
+						"description": "Delete a workout session (cascades to delete all logged exercises and sets)."
+					},
+					"response": []
+				}
+			],
+			"description": "Workout session management with bulk insert capabilities"
+		},
+		{
+			"name": "Statistics",
+			"item": [
+				{
+					"name": "Get Workout Stats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/workouts/stats",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"workouts",
+								"stats"
+							],
+							"query": [
+								{
+									"key": "start_date",
+									"value": "2025-12-01",
+									"disabled": true
+								},
+								{
+									"key": "end_date",
+									"value": "2025-12-31",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get aggregate workout statistics for the authenticated user."
+					},
+					"response": []
+				}
+			],
+			"description": "Workout statistics and analytics"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "user_email",
+			"value": "user@example.com",
+			"type": "string"
+		},
+		{
+			"key": "user_password",
+			"value": "SecurePassword123!",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "last_workout_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "last_exercise_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

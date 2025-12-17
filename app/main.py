@@ -1,26 +1,68 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from app.database import engine, Base
-from app.api.v1 import workout_router # Apenas para evitar erro de import
+from app.api.routes import auth, users, admin, analytics, workouts
 
-# Importa todos os módulos de modelos para garantir que Base.metadata 
-# contenha todas as definições de tabela para o Alembic.
-from app.models import exercise, log 
+# Import all models to ensure Base.metadata contains all table definitions for Alembic
+from app.models import User, UserSettings, UserGoal, Exercise, WorkoutSession, LogExercise
 
-# OBS: Não precisamos chamar Base.metadata.create_all(bind=engine) aqui, 
-# pois o Alembic fará a gestão da criação das tabelas.
+# Note: We don't call Base.metadata.create_all(bind=engine) here
+# because Alembic manages table creation through migrations
 
-app = FastAPI(title="Gym Tracker API", version="0.0.1")
+app = FastAPI(
+    title="Gym Dorian API",
+    description="Fitness tracking and analytics API with user authentication",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
 
-# 1. Root Endpoint
+# Configure CORS middleware
+# TODO: Update allowed origins for production
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Change to specific origins in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include routers
+app.include_router(auth.router, prefix="/api")
+app.include_router(users.router, prefix="/api")
+app.include_router(admin.router, prefix="/api")  # Admin routes (superuser only)
+app.include_router(workouts.router, prefix="/api")  # Workout logging
+app.include_router(analytics.router, prefix="/api")  # Analytics & progress tracking
+
+# Root endpoint
 @app.get("/")
 def read_root():
-    return {"status": "ok", "message": "API is running"}
+    """Root endpoint with API information."""
+    return {
+        "status": "ok",
+        "message": "Gym Dorian API is running",
+        "version": "1.0.0",
+        "docs": "/docs"
+    }
 
-# 2. Health Check Endpoint - Phase 1 DoD requirement
+# Health check endpoint
 @app.get("/ping")
 def ping():
     """Health check endpoint to verify API connectivity."""
     return {"status": "ok"}
 
-# A rota de log será adicionada na Fase 2
-# app.include_router(workout_router.router, prefix="/api/v1")
+
+# Startup event
+@app.on_event("startup")
+async def startup_event():
+    """Run on application startup."""
+    print("🏋️ Gym Dorian API started successfully!")
+    print("📚 API Documentation available at: /docs")
+
+
+# Shutdown event
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Run on application shutdown."""
+    print("👋 Gym Dorian API shutting down...")

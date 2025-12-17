@@ -1,0 +1,96 @@
+{
+  "workout_date": "2025-12-17",
+  "duration_minutes": 90,
+  "notes": "Chest and triceps day - feeling strong!",
+  "exercises": [
+    {
+      "exercise_id": 1,
+      "sets": [
+        {
+          "set_number": 1,
+          "reps": 10,
+          "weight": 100.0,
+          "rpe": 7,
+          "notes": "Warm-up set",
+          "rest_time_seconds": 120
+        },
+        {
+          "set_number": 2,
+          "reps": 8,
+          "weight": 110.0,
+          "rpe": 8,
+          "notes": "Increasing weight",
+          "rest_time_seconds": 150
+        },
+        {
+          "set_number": 3,
+          "reps": 6,
+          "weight": 120.0,
+          "rpe": 9,
+          "notes": "Top set - heavy!",
+          "rest_time_seconds": 180
+        },
+        {
+          "set_number": 4,
+          "reps": 8,
+          "weight": 110.0,
+          "rpe": 8,
+          "notes": "Drop set",
+          "rest_time_seconds": 120
+        }
+      ]
+    },
+    {
+      "exercise_id": 2,
+      "sets": [
+        {
+          "set_number": 1,
+          "reps": 12,
+          "weight": 40.0,
+          "rpe": 6,
+          "rest_time_seconds": 90
+        },
+        {
+          "set_number": 2,
+          "reps": 10,
+          "weight": 45.0,
+          "rpe": 7,
+          "rest_time_seconds": 90
+        },
+        {
+          "set_number": 3,
+          "reps": 10,
+          "weight": 45.0,
+          "rpe": 8,
+          "rest_time_seconds": 90
+        }
+      ]
+    },
+    {
+      "exercise_id": 3,
+      "sets": [
+        {
+          "set_number": 1,
+          "reps": 15,
+          "weight": 20.0,
+          "rpe": 7,
+          "rest_time_seconds": 60
+        },
+        {
+          "set_number": 2,
+          "reps": 12,
+          "weight": 22.5,
+          "rpe": 8,
+          "rest_time_seconds": 60
+        },
+        {
+          "set_number": 3,
+          "reps": 10,
+          "weight": 25.0,
+          "rpe": 9,
+          "rest_time_seconds": 60
+        }
+      ]
+    }
+  ]
+}
