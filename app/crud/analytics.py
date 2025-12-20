@@ -14,6 +14,7 @@ from app.schemas.analytics_schema import (
     WorkoutVolumeByWeek,
     WorkoutVolumeByMonth,
     MuscleGroupDistribution,
+    WeeklyMuscleVolume,
     PersonalRecord,
     WorkoutInsight,
 )
@@ -91,7 +92,7 @@ def get_exercise_progress(
     return ExerciseProgressResponse(
         exercise_id=exercise_id,
         exercise_name=exercise.name,
-        muscle_group=exercise.muscle_group,
+        agonist_muscle_group=exercise.agonist_muscle_group,
         data_points=data_points,
         first_workout=first_point.workout_date,
         last_workout=last_point.workout_date,
@@ -144,13 +145,13 @@ def get_user_progress_summary(db: Session, user_id: int) -> UserProgressSummary:
 
     # Get muscle group distribution
     muscle_query = text("""
-        SELECT muscle_group, exercise_count
+        SELECT agonist_muscle_group, exercise_count
         FROM muscle_group_distribution
         WHERE user_id = :user_id
     """)
 
     muscle_result = db.execute(muscle_query, {"user_id": user_id}).fetchall()
-    exercises_by_muscle_group = {row.muscle_group: row.exercise_count for row in muscle_result}
+    exercises_by_muscle_group = {row.agonist_muscle_group: row.exercise_count for row in muscle_result}
 
     # Get most frequent exercise
     freq_query = text("""
@@ -315,7 +316,7 @@ def get_muscle_group_distribution(
     """
     query = text("""
         SELECT
-            muscle_group,
+            agonist_muscle_group,
             exercise_count,
             total_sets,
             total_volume,
@@ -328,6 +329,43 @@ def get_muscle_group_distribution(
     result = db.execute(query, {"user_id": user_id}).fetchall()
 
     return [MuscleGroupDistribution.model_validate(dict(row._mapping)) for row in result]
+
+
+def get_weekly_muscle_volume(
+    db: Session,
+    user_id: int,
+    weeks: int = 12
+) -> List[WeeklyMuscleVolume]:
+    """
+    Get weekly muscle volume (agonist + synergist sets combined).
+
+    Tracks total weekly sets per muscle group to ensure optimal training volume
+    (ideal range: 10-20 sets per muscle per week).
+
+    Args:
+        db: Database session
+        user_id: User ID
+        weeks: Number of weeks to retrieve (default: 12)
+
+    Returns:
+        List[WeeklyMuscleVolume]: Weekly muscle volume data
+    """
+    query = text("""
+        SELECT
+            week_start,
+            muscle_group,
+            weekly_sets,
+            volume_status,
+            percentage_of_optimal
+        FROM weekly_muscle_volume
+        WHERE user_id = :user_id
+            AND week_start >= CURRENT_DATE - INTERVAL ':weeks weeks'
+        ORDER BY week_start DESC, muscle_group
+    """)
+
+    result = db.execute(query, {"user_id": user_id, "weeks": weeks}).fetchall()
+
+    return [WeeklyMuscleVolume.model_validate(dict(row._mapping)) for row in result]
 
 
 # ===========================
@@ -399,11 +437,11 @@ def generate_user_insights(db: Session, user_id: int) -> List[WorkoutInsight]:
         total_volume = sum(m.total_volume for m in muscle_dist)
         for muscle in muscle_dist:
             percentage = (muscle.total_volume / total_volume * 100) if total_volume > 0 else 0
-            if percentage < 10 and muscle.muscle_group:
+            if percentage < 10 and muscle.agonist_muscle_group:
                 insights.append(WorkoutInsight(
                     type="suggestion",
-                    title=f"Balance Your {muscle.muscle_group} Training",
-                    description=f"Only {percentage:.1f}% of your volume goes to {muscle.muscle_group}. Consider adding more exercises!",
+                    title=f"Balance Your {muscle.agonist_muscle_group} Training",
+                    description=f"Only {percentage:.1f}% of your volume goes to {muscle.agonist_muscle_group}. Consider adding more exercises!",
                     priority=2
                 ))
 

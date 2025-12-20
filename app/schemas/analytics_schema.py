@@ -23,7 +23,7 @@ class ExerciseProgressResponse(BaseModel):
     """Exercise progress tracking over time for a user."""
     exercise_id: int
     exercise_name: str
-    muscle_group: Optional[str]
+    agonist_muscle_group: Optional[str]
     data_points: List[ExerciseProgressPoint]
 
     # Summary statistics
@@ -79,11 +79,22 @@ class WorkoutVolumeByMonth(BaseModel):
 
 class MuscleGroupDistribution(BaseModel):
     """Distribution of workouts by muscle group."""
-    muscle_group: str
+    agonist_muscle_group: str
     exercise_count: int
     total_sets: int
     total_volume: float
     percentage: float
+
+
+class WeeklyMuscleVolume(BaseModel):
+    """Weekly set volume per muscle group (agonist + synergist combined)."""
+    week_start: date
+    muscle_group: str
+    weekly_sets: int
+    volume_status: str  # 'under_trained', 'optimal', 'over_trained'
+    percentage_of_optimal: float
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ===========================
@@ -94,7 +105,7 @@ class PersonalRecord(BaseModel):
     """Personal record for an exercise."""
     exercise_id: int
     exercise_name: str
-    muscle_group: Optional[str]
+    agonist_muscle_group: Optional[str]
     max_weight: float
     reps_at_max: int
     achieved_date: date

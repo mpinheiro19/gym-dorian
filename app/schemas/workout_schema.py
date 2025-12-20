@@ -1,7 +1,9 @@
 """Workout logging schemas for API requests and responses."""
 from typing import Optional, List
 from datetime import date, datetime
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
+
+from app.models.enums import MuscleGroup
 
 
 # ===========================
@@ -11,7 +13,8 @@ from pydantic import BaseModel, Field, ConfigDict
 class ExerciseBase(BaseModel):
     """Base schema for Exercise."""
     name: str = Field(..., min_length=1, max_length=255)
-    muscle_group: Optional[str] = Field(None, max_length=100)
+    agonist_muscle_group: Optional[MuscleGroup] = Field(None, description="Primary muscle group")
+    synergist_muscle_group: Optional[MuscleGroup] = Field(None, description="Assisting muscle group")
     equipment_type: Optional[str] = Field(None, max_length=100)
 
 
@@ -23,7 +26,8 @@ class ExerciseCreate(ExerciseBase):
 class ExerciseUpdate(BaseModel):
     """Schema for updating an exercise."""
     name: Optional[str] = Field(None, min_length=1, max_length=255)
-    muscle_group: Optional[str] = Field(None, max_length=100)
+    agonist_muscle_group: Optional[MuscleGroup] = Field(None, description="Primary muscle group")
+    synergist_muscle_group: Optional[MuscleGroup] = Field(None, description="Assisting muscle group")
     equipment_type: Optional[str] = Field(None, max_length=100)
 
 
