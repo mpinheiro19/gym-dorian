@@ -1,0 +1,37 @@
+
+# Core web framework
+fastapi>=0.95
+
+# ASGI server for development / production
+uvicorn[standard]>=0.18
+
+# Database / ORM
+SQLAlchemy>=2.0
+psycopg2-binary>=2.9
+
+# Configuration via environment / settings (pydantic v2 settings integration)
+pydantic>=2.0
+pydantic-settings>=0.1
+email-validator>=2.0  # Required for EmailStr validation
+
+# Database migrations
+alembic>=1.10
+
+# Authentication / Password hashing
+passlib[bcrypt]>=1.7
+bcrypt==3.2.2  # Pinned to 3.2.2 for full passlib compatibility
+python-jose[cryptography]>=3.3  # For JWT tokens
+python-multipart>=0.0.5  # For form data parsing
+
+# Testing dependencies
+pytest>=7.4
+pytest-cov>=4.1
+pytest-asyncio>=0.21
+httpx>=0.24  # Required for TestClient async support
+
+# Optional: development / linting / type checking (uncomment if needed)
+# black
+# isort
+# ruff
+# mypy
+
