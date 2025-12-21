@@ -14,6 +14,7 @@ from app.schemas.analytics_schema import (
     WorkoutVolumeByWeek,
     WorkoutVolumeByMonth,
     MuscleGroupDistribution,
+    WeeklyMuscleVolume,
     PersonalRecord,
     UserInsights,
     WorkoutInsight,
@@ -185,6 +186,34 @@ def get_muscle_group_distribution(
         List[MuscleGroupDistribution]: Muscle group distribution
     """
     return analytics_crud.get_muscle_group_distribution(db, current_user.id)
+
+
+@router.get("/muscle-volume/weekly", response_model=List[WeeklyMuscleVolume])
+def get_weekly_muscle_volume(
+    weeks: int = Query(12, ge=1, le=52, description="Number of weeks to retrieve"),
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get weekly muscle volume tracking (agonist + synergist combined).
+
+    Tracks total weekly sets per muscle group to ensure optimal training volume.
+    Ideal range: 10-20 sets per muscle per week.
+
+    Volume status:
+    - under_trained: < 10 sets/week
+    - optimal: 10-20 sets/week
+    - over_trained: > 20 sets/week
+
+    Args:
+        weeks: Number of weeks to retrieve (default: 12, max: 52)
+        current_user: Authenticated user
+        db: Database session
+
+    Returns:
+        List[WeeklyMuscleVolume]: Weekly muscle volume data
+    """
+    return analytics_crud.get_weekly_muscle_volume(db, current_user.id, weeks)
 
 
 # ===========================

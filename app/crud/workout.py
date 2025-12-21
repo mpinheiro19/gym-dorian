@@ -36,7 +36,7 @@ def get_exercises(
         db: Database session
         skip: Number of records to skip
         limit: Maximum records to return
-        muscle_group: Filter by muscle group
+        muscle_group: Filter by agonist muscle group (primary muscle)
         search: Search by name
 
     Returns:
@@ -45,7 +45,7 @@ def get_exercises(
     query = db.query(Exercise)
 
     if muscle_group:
-        query = query.filter(Exercise.muscle_group == muscle_group)
+        query = query.filter(Exercise.agonist_muscle_group == muscle_group)
 
     if search:
         query = query.filter(Exercise.name.ilike(f"%{search}%"))
