@@ -2,10 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import engine, Base
-from app.api.routes import auth, users, admin, analytics, workouts
+from app.api.routes import auth, users, admin, analytics, workouts, templates
 
 # Import all models to ensure Base.metadata contains all table definitions for Alembic
-from app.models import User, UserSettings, UserGoal, Exercise, WorkoutSession, LogExercise
+from app.models import User, UserSettings, UserGoal, Exercise, WorkoutSession, LogExercise, WorkoutTemplate, TemplateExercise
 
 # Note: We don't call Base.metadata.create_all(bind=engine) here
 # because Alembic manages table creation through migrations
@@ -33,6 +33,7 @@ app.include_router(auth.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")  # Admin routes (superuser only)
 app.include_router(workouts.router, prefix="/api")  # Workout logging
+app.include_router(templates.router, prefix="/api")  # Workout templates
 app.include_router(analytics.router, prefix="/api")  # Analytics & progress tracking
 
 # Root endpoint

@@ -178,23 +178,72 @@ class WorkoutStats(BaseModel):
 
 
 # ===========================
-# Template Schemas
+# Template Exercise Schemas
 # ===========================
 
-class WorkoutTemplate(BaseModel):
-    """Workout template for reusable routines."""
+class TemplateExerciseBase(BaseModel):
+    """Base schema for exercise in template."""
+    exercise_id: int = Field(..., gt=0)
+    order_index: int = Field(..., ge=0)
+    target_sets: Optional[int] = Field(None, ge=1, le=20)
+    notes: Optional[str] = Field(None, max_length=500)
+
+
+class TemplateExerciseCreate(TemplateExerciseBase):
+    """Schema for creating template exercise."""
+    pass
+
+
+class TemplateExerciseResponse(TemplateExerciseBase):
+    """Template exercise in responses."""
+    id: int
+    template_id: int
+    exercise: ExerciseResponse
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ===========================
+# Workout Template Schemas
+# ===========================
+
+class WorkoutTemplateBase(BaseModel):
+    """Base schema for workout template."""
     name: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = Field(None, max_length=1000)
-    exercises: List[LogExerciseCreate]
 
 
-class WorkoutTemplateResponse(WorkoutTemplate):
+class WorkoutTemplateCreate(WorkoutTemplateBase):
+    """Schema for creating workout template."""
+    exercises: List[TemplateExerciseCreate] = Field(..., min_length=1)
+
+
+class WorkoutTemplateUpdate(BaseModel):
+    """Schema for updating workout template."""
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+    description: Optional[str] = None
+    exercises: Optional[List[TemplateExerciseCreate]] = None
+
+
+class WorkoutTemplateResponse(WorkoutTemplateBase):
     """Workout template in responses."""
     id: int
     user_id: int
     created_at: datetime
+    updated_at: Optional[datetime]
+    exercises: List[TemplateExerciseResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+
+# ===========================
+# Template Execution Schemas
+# ===========================
+
+class ExecuteTemplateRequest(BaseModel):
+    """Request to execute a template and prepare workout."""
+    template_id: int = Field(..., gt=0)
+    workout_date: Optional[date] = Field(default_factory=date.today)
 
 
 # ===========================
