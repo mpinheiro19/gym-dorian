@@ -16,6 +16,7 @@ from app.models.user import (
 )
 from app.models.exercise import Exercise
 from app.models.log import WorkoutSession, LogExercise, LogSet
+from app.models.template import WorkoutTemplate, TemplateExercise
 
 __all__ = [
     # Base
@@ -35,4 +36,7 @@ __all__ = [
     "WorkoutSession",
     "LogExercise",
     "LogSet",
+    # Workout template models
+    "WorkoutTemplate",
+    "TemplateExercise",
 ]
