@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -10,12 +11,23 @@ from app.models import User, UserSettings, UserGoal, Exercise, WorkoutSession, L
 # Note: We don't call Base.metadata.create_all(bind=engine) here
 # because Alembic manages table creation through migrations
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application startup and shutdown lifecycle."""
+    print("🏋️ Gym Dorian API started successfully!")
+    print("📚 API Documentation available at: /docs")
+    yield
+    print("👋 Gym Dorian API shutting down...")
+
+
 app = FastAPI(
     title="Gym Dorian API",
     description="Fitness tracking and analytics API with user authentication",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # Configure CORS middleware
@@ -53,18 +65,3 @@ def read_root():
 def ping():
     """Health check endpoint to verify API connectivity."""
     return {"status": "ok"}
-
-
-# Startup event
-@app.on_event("startup")
-async def startup_event():
-    """Run on application startup."""
-    print("🏋️ Gym Dorian API started successfully!")
-    print("📚 API Documentation available at: /docs")
-
-
-# Shutdown event
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Run on application shutdown."""
-    print("👋 Gym Dorian API shutting down...")
