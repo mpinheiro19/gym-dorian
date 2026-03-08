@@ -1,5 +1,5 @@
 """Analytics routes for workout progress tracking and insights."""
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
@@ -245,7 +245,7 @@ def get_user_insights(
     return UserInsights(
         user_id=current_user.id,
         insights=insights,
-        generated_at=datetime.utcnow()
+        generated_at=datetime.now(timezone.utc)
     )
 
 
@@ -297,7 +297,7 @@ def get_analytics_dashboard(
         recent_personal_records=analytics_crud.get_personal_records(db, current_user.id, 5),
         muscle_group_distribution=analytics_crud.get_muscle_group_distribution(db, current_user.id),
         insights=analytics_crud.generate_user_insights(db, current_user.id),
-        generated_at=datetime.utcnow()
+        generated_at=datetime.now(timezone.utc)
     )
 
 
