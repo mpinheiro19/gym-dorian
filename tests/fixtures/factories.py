@@ -12,6 +12,9 @@ from typing import Optional
 
 from app.models.exercise import Exercise
 from app.models.log import WorkoutSession, LogExercise, LogSet
+from app.models.plan import WorkoutPlan, PlanWeek, PlanDay
+from app.models.template import WorkoutTemplate
+from app.models.enums import PlanStatus
 
 
 class ExerciseFactory:
@@ -20,7 +23,7 @@ class ExerciseFactory:
     @staticmethod
     def create(
         name: str = "Test Exercise",
-        muscle_group: Optional[str] = "Test Group",
+        agonist_muscle_group: Optional[str] = "Test Group",
         equipment_type: Optional[str] = "Test Equipment"
     ) -> Exercise:
         """
@@ -28,7 +31,7 @@ class ExerciseFactory:
         
         Args:
             name: Exercise name
-            muscle_group: Target muscle group
+            agonist_muscle_group: Primary muscle group
             equipment_type: Required equipment
             
         Returns:
@@ -36,7 +39,7 @@ class ExerciseFactory:
         """
         return Exercise(
             name=name,
-            muscle_group=muscle_group,
+            agonist_muscle_group=agonist_muscle_group,
             equipment_type=equipment_type
         )
     
@@ -55,7 +58,7 @@ class ExerciseFactory:
         return [
             Exercise(
                 name=f"{prefix} {i}",
-                muscle_group=f"Group {i % 3}",
+                agonist_muscle_group=f"Group {i % 3}",
                 equipment_type=f"Equipment {i % 2}"
             )
             for i in range(count)
@@ -244,3 +247,74 @@ class LogSetFactory:
             )
             for i in range(count)
         ]
+
+
+class PlanDayFactory:
+    """Factory for creating PlanDay test instances."""
+
+    @staticmethod
+    def create(
+        week_id: int,
+        day_of_week: int = 0,
+        template_id: int = 1,
+        notes: Optional[str] = None,
+    ) -> PlanDay:
+        """Create a PlanDay instance (not flushed to DB)."""
+        return PlanDay(
+            week_id=week_id,
+            day_of_week=day_of_week,
+            template_id=template_id,
+            notes=notes,
+        )
+
+
+class PlanWeekFactory:
+    """Factory for creating PlanWeek test instances."""
+
+    @staticmethod
+    def create(
+        plan_id: int,
+        week_number: int = 1,
+        name: Optional[str] = None,
+    ) -> PlanWeek:
+        """Create a PlanWeek instance (not flushed to DB)."""
+        return PlanWeek(
+            plan_id=plan_id,
+            week_number=week_number,
+            name=name,
+        )
+
+
+class WorkoutPlanFactory:
+    """Factory for creating WorkoutPlan test instances."""
+
+    @staticmethod
+    def create(
+        user_id: int = 1,
+        name: str = "Test Plan",
+        description: Optional[str] = None,
+        status: PlanStatus = PlanStatus.QUEUED,
+        start_date: Optional[date] = None,
+    ) -> WorkoutPlan:
+        """Create a WorkoutPlan instance (not flushed to DB)."""
+        return WorkoutPlan(
+            user_id=user_id,
+            name=name,
+            description=description,
+            status=status,
+            start_date=start_date,
+        )
+
+    @staticmethod
+    def create_active(
+        user_id: int = 1,
+        name: str = "Active Plan",
+        start_date: Optional[date] = None,
+    ) -> WorkoutPlan:
+        """Create an active WorkoutPlan starting from start_date (default: today)."""
+        return WorkoutPlan(
+            user_id=user_id,
+            name=name,
+            status=PlanStatus.ACTIVE,
+            start_date=start_date or date.today(),
+        )

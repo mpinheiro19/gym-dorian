@@ -140,7 +140,7 @@ class TestDataTransformations:
         exercise = Exercise(
             id=1,
             name="Bench Press",
-            muscle_group="Chest",
+            agonist_muscle_group="Chest",
             equipment_type="Barbell"
         )
         

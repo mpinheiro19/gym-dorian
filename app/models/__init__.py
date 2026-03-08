@@ -17,6 +17,8 @@ from app.models.user import (
 from app.models.exercise import Exercise
 from app.models.log import WorkoutSession, LogExercise, LogSet
 from app.models.template import WorkoutTemplate, TemplateExercise
+from app.models.plan import WorkoutPlan, PlanWeek, PlanDay
+from app.models.enums import PlanStatus
 
 __all__ = [
     # Base

@@ -106,6 +106,9 @@ class WorkoutSessionBase(BaseModel):
 class WorkoutSessionCreate(WorkoutSessionBase):
     """Schema for creating a workout session."""
     exercises: List[LogExerciseCreate] = Field(default_factory=list, description="Exercises logged in this session")
+    # Optional traceability fields — set when session originates from a template or plan
+    template_id: Optional[int] = Field(None, gt=0, description="Template this session was started from")
+    plan_id: Optional[int] = Field(None, gt=0, description="Plan this session belongs to")
 
 
 class WorkoutSessionUpdate(BaseModel):
@@ -113,12 +116,16 @@ class WorkoutSessionUpdate(BaseModel):
     workout_date: Optional[date] = None
     duration_minutes: Optional[int] = Field(None, ge=1, le=600)
     notes: Optional[str] = Field(None, max_length=2000)
+    template_id: Optional[int] = Field(None, gt=0)
+    plan_id: Optional[int] = Field(None, gt=0)
 
 
 class WorkoutSessionResponse(WorkoutSessionBase):
     """Schema for WorkoutSession in API responses."""
     id: int
     user_id: int
+    template_id: Optional[int] = None
+    plan_id: Optional[int] = None
     exercises_done: List[LogExerciseResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
@@ -153,6 +160,8 @@ class QuickWorkoutLog(BaseModel):
     exercises: List[QuickLogExercise] = Field(..., min_length=1)
     duration_minutes: Optional[int] = None
     notes: Optional[str] = None
+    template_id: Optional[int] = Field(None, gt=0, description="Template this session was started from")
+    plan_id: Optional[int] = Field(None, gt=0, description="Plan this session belongs to")
 
 
 # ===========================

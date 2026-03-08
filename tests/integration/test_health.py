@@ -28,7 +28,7 @@ class TestHealthEndpoint:
         assert "status" in data
         assert "message" in data
         assert data["status"] == "ok"
-        assert data["message"] == "API is running"
+        assert data["message"] == "Gym Dorian API is running"
     
     def test_root_endpoint_content_type(self, client: TestClient):
         """Test that the root endpoint returns JSON content type."""
@@ -46,13 +46,13 @@ class TestAPIConfiguration:
         assert response.status_code == 200
         
         data = response.json()
-        assert data["info"]["title"] == "Gym Tracker API"
+        assert data["info"]["title"] == "Gym Dorian API"
     
     def test_api_has_correct_version(self, client: TestClient):
         """Test that the API has the correct version in OpenAPI schema."""
         response = client.get("/openapi.json")
         data = response.json()
-        assert data["info"]["version"] == "0.0.1"
+        assert data["info"]["version"] == "1.0.0"
     
     def test_docs_endpoint_is_accessible(self, client: TestClient):
         """Test that the API documentation is accessible."""

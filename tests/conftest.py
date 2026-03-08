@@ -19,6 +19,11 @@ from app.main import app
 from app.models.base import Base
 from app.models.exercise import Exercise
 from app.models.log import WorkoutSession, LogExercise, LogSet
+from app.models.template import WorkoutTemplate, TemplateExercise
+from app.models.plan import WorkoutPlan, PlanWeek, PlanDay
+from app.models.user import User
+from app.models.enums import PlanStatus
+from datetime import date
 
 
 # Use in-memory SQLite for tests (fast and isolated)
@@ -103,22 +108,22 @@ def sample_exercises(db_session: Session) -> list[Exercise]:
     exercises = [
         Exercise(
             name="Bench Press",
-            muscle_group="Chest",
+            agonist_muscle_group="Chest",
             equipment_type="Barbell"
         ),
         Exercise(
             name="Squat",
-            muscle_group="Legs",
+            agonist_muscle_group="Legs",
             equipment_type="Barbell"
         ),
         Exercise(
             name="Deadlift",
-            muscle_group="Back",
+            agonist_muscle_group="Back",
             equipment_type="Barbell"
         ),
         Exercise(
             name="Pull Up",
-            muscle_group="Back",
+            agonist_muscle_group="Back",
             equipment_type="Bodyweight"
         ),
     ]
@@ -192,6 +197,79 @@ def sample_workout_session(db_session: Session, sample_exercises: list[Exercise]
     db_session.refresh(session)
 
     return session
+
+
+@pytest.fixture(scope="function")
+def sample_user(db_session: Session) -> User:
+    """Create a sample user for plan-related tests.
+
+    Returns:
+        User: Persisted user instance
+    """
+    user = User(
+        email="testuser@plantest.com",
+        password_hash="hashed",
+        full_name="Plan Test User",
+        is_active=True,
+        is_superuser=False,
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
+@pytest.fixture(scope="function")
+def sample_template(db_session: Session, sample_exercises: list[Exercise]) -> WorkoutTemplate:
+    """Create a sample WorkoutTemplate for testing.
+
+    Returns:
+        WorkoutTemplate: Persisted template with one exercise
+    """
+    tmpl = WorkoutTemplate(user_id=1, name="Upper Body A", description="Push day")
+    db_session.add(tmpl)
+    db_session.flush()
+    te = TemplateExercise(
+        template_id=tmpl.id,
+        exercise_id=sample_exercises[0].id,
+        order_index=0,
+    )
+    db_session.add(te)
+    db_session.commit()
+    db_session.refresh(tmpl)
+    return tmpl
+
+
+@pytest.fixture(scope="function")
+def sample_plan(db_session: Session, sample_template: WorkoutTemplate) -> WorkoutPlan:
+    """Create a sample WorkoutPlan (active, 1 week, Monday assigned).
+
+    Returns:
+        WorkoutPlan: Persisted plan with one week and one day
+    """
+    plan = WorkoutPlan(
+        user_id=sample_template.user_id,
+        name="Test Plan",
+        description="A plan for testing",
+        status=PlanStatus.ACTIVE,
+        start_date=date.today(),
+    )
+    db_session.add(plan)
+    db_session.flush()
+
+    week = PlanWeek(plan_id=plan.id, week_number=1, name="Week 1")
+    db_session.add(week)
+    db_session.flush()
+
+    day = PlanDay(
+        week_id=week.id,
+        day_of_week=0,  # Monday
+        template_id=sample_template.id,
+    )
+    db_session.add(day)
+    db_session.commit()
+    db_session.refresh(plan)
+    return plan
 
 
 # Pytest configuration hooks
