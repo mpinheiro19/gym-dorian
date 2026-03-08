@@ -7,6 +7,8 @@ from app.models.base import Base
 
 if TYPE_CHECKING:
     from app.models.user import User
+    from app.models.template import WorkoutTemplate
+    from app.models.plan import WorkoutPlan
 
 
 class WorkoutSession(Base):
@@ -33,8 +35,22 @@ class WorkoutSession(Base):
     duration_minutes: Mapped[Optional[int]] = mapped_column(default=None)
     notes: Mapped[Optional[str]] = mapped_column(Text(), default=None)
 
+    # Traceability — nullable FK to template and plan that originated this session
+    template_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey('workout_templates.id', ondelete='SET NULL'),
+        default=None,
+        index=True
+    )
+    plan_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey('workout_plans.id', ondelete='SET NULL'),
+        default=None,
+        index=True
+    )
+
     # Relationships
     user: Mapped["User"] = relationship(back_populates="workout_sessions")
+    template: Mapped[Optional["WorkoutTemplate"]] = relationship(foreign_keys=[template_id])
+    plan: Mapped[Optional["WorkoutPlan"]] = relationship(foreign_keys=[plan_id])
     exercises_done: Mapped[list["LogExercise"]] = relationship(
         back_populates="session",
         cascade="all, delete-orphan"

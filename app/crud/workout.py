@@ -228,7 +228,9 @@ def create_workout_session(
         user_id=user_id,
         workout_date=workout_in.workout_date,
         duration_minutes=workout_in.duration_minutes,
-        notes=workout_in.notes
+        notes=workout_in.notes,
+        template_id=getattr(workout_in, 'template_id', None),
+        plan_id=getattr(workout_in, 'plan_id', None),
     )
     db.add(workout)
     db.flush()  # Flush to get workout.id

@@ -21,3 +21,12 @@ class MuscleGroup(str, Enum):
     def values(cls):
         """Return list of all muscle group values."""
         return [member.value for member in cls]
+
+
+class PlanStatus(str, Enum):
+    """Valid statuses for a WorkoutPlan."""
+    ACTIVE = "active"
+    QUEUED = "queued"
+    PAUSED = "paused"
+    COMPLETED = "completed"
+    ARCHIVED = "archived"
