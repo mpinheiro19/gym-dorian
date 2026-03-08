@@ -1,7 +1,7 @@
 """Workout logging routes for tracking exercises and sessions."""
 from typing import List, Optional
 from datetime import date
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Response
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -23,6 +23,8 @@ from app.schemas.workout_schema import (
     WorkoutStats,
     CopyWorkoutRequest,
 )
+from app.schemas.sync_schema import BulkSyncRequest, BulkSyncResponse
+from app.services import sync_service
 
 router = APIRouter(prefix="/workouts", tags=["Workouts"])
 
@@ -324,6 +326,60 @@ def quick_log_workout(
             )
 
     return workout_crud.create_quick_workout(db, current_user.id, quick_log)
+
+
+@router.post(
+    "/sessions/bulk",
+    response_model=BulkSyncResponse,
+    status_code=207,
+    summary="Bulk sync workout sessions",
+    description=(
+        "Sync multiple offline workout sessions in a single request. "
+        "Each session is processed independently using Last-Write-Wins conflict resolution. "
+        "Returns HTTP 207 Multi-Status with individual results per session."
+    ),
+    responses={
+        207: {"description": "Multi-status: see results[].status for per-session outcome"},
+        401: {"description": "Not authenticated"},
+        422: {"description": "Validation error in request body"},
+    },
+)
+def bulk_sync_sessions(
+    sync_request: BulkSyncRequest,
+    response: Response,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+) -> BulkSyncResponse:
+    """Bulk sync offline workout sessions with Last-Write-Wins conflict resolution.
+
+    This endpoint is designed for offline-first mobile clients that generate
+    UUIDs locally and batch their writes.  It processes each session in the
+    request independently:
+
+    - **created**: The ``client_uuid`` was not found on the server; a new
+      session was inserted.
+    - **updated**: The ``client_uuid`` was found but the client's
+      ``updated_at`` is more recent; the server record was overwritten.
+    - **conflict**: The ``client_uuid`` was found and the server's record is
+      equal-or-newer; no write was performed.  The server's current data is
+      returned in ``server_data`` for client-side merge.
+    - **error**: An exception occurred for this session; other sessions are
+      unaffected.
+
+    Idempotency is provided via ``sync_id``.  Resubmitting the same
+    ``sync_id`` returns the cached result from the first run.
+
+    Args:
+        sync_request: Bulk sync payload with idempotency key and sessions.
+        response: FastAPI Response object used to set the 207 status code.
+        db: Database session.
+        current_user: Authenticated user.
+
+    Returns:
+        BulkSyncResponse with per-session results and a summary.
+    """
+    response.status_code = 207
+    return sync_service.process_bulk_sync(db, current_user.id, sync_request)
 
 
 @router.put("/sessions/{workout_id}", response_model=WorkoutSessionResponse)
