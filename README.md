@@ -2,6 +2,8 @@
 
 A comprehensive fitness tracking and analytics API built with FastAPI, designed to help users log workouts, track progress, and analyze fitness data over time.
 
+This project is designed as a hands-on exploration of modern AI-assisted development, serving as a sandbox to **evaluate** and **master** tools such as **GitHub Copilot**, **Claude Code**, and other emerging LLM-based workflows. The codebase and architecture are **intentionally** shaped to <ins>test the limits of AI pair-programming, automated refactoring, and agentic coding patterns</ins>.
+
 ## Quick Summary
 
 - **API Framework**: FastAPI
