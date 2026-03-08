@@ -3,10 +3,15 @@
 All models must inherit from this Base class to be registered
 for Alembic migrations.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 from sqlalchemy import DateTime, Uuid, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+
+def _utcnow() -> datetime:
+    """Return current UTC time as timezone-aware datetime."""
+    return datetime.now(timezone.utc)
 
 
 class Base(DeclarativeBase):
@@ -25,14 +30,14 @@ class TimestampMixin:
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
-        default=datetime.utcnow,
+        default=_utcnow,
         nullable=False,
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        default=_utcnow,
+        onupdate=_utcnow,
         nullable=False,
     )
 

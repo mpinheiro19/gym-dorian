@@ -1,6 +1,6 @@
 """CRUD operations for User model."""
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from app.models.user import User, UserSettings, UserGoal
@@ -79,7 +79,7 @@ def update_user(db: Session, user: User, user_in: UserUpdate) -> User:
     for field, value in update_data.items():
         setattr(user, field, value)
 
-    user.updated_at = datetime.utcnow()
+    user.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(user)
     return user
@@ -104,7 +104,7 @@ def authenticate_user(db: Session, email: str, password: str) -> Optional[User]:
         return None
 
     # Update last login timestamp
-    user.last_login = datetime.utcnow()
+    user.last_login = datetime.now(timezone.utc)
     db.commit()
 
     return user
@@ -178,7 +178,7 @@ def update_user_settings(
     for field, value in update_data.items():
         setattr(settings, field, value)
 
-    settings.updated_at = datetime.utcnow()
+    settings.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(settings)
     return settings
@@ -250,9 +250,9 @@ def update_user_goal(
 
     # If status is being set to completed, record completion time
     if update_data.get("status") == "completed" and goal.completed_at is None:
-        goal.completed_at = datetime.utcnow()
+        goal.completed_at = datetime.now(timezone.utc)
 
-    goal.updated_at = datetime.utcnow()
+    goal.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(goal)
     return goal

@@ -1,6 +1,6 @@
 """Admin CRUD operations for user management and analytics."""
 from typing import Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy import func, and_
 from sqlalchemy.orm import Session
 
@@ -156,7 +156,7 @@ def update_user_admin(db: Session, user: User, user_in: UserUpdate) -> User:
     for field, value in update_data.items():
         setattr(user, field, value)
 
-    user.updated_at = datetime.utcnow()
+    user.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(user)
     return user
@@ -176,7 +176,7 @@ def toggle_user_active_status(db: Session, user_id: int) -> User:
     user = db.query(User).filter(User.id == user_id).first()
     if user:
         user.is_active = not user.is_active
-        user.updated_at = datetime.utcnow()
+        user.updated_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(user)
     return user
@@ -221,13 +221,13 @@ def get_user_statistics(db: Session) -> dict:
     superusers = db.query(func.count(User.id)).filter(User.is_superuser == True).scalar()
 
     # New users in last 30 days
-    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
     new_users_30d = db.query(func.count(User.id)).filter(
         User.created_at >= thirty_days_ago
     ).scalar()
 
     # Users with recent activity (logged in last 7 days)
-    seven_days_ago = datetime.utcnow() - timedelta(days=7)
+    seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
     active_users_7d = db.query(func.count(User.id)).filter(
         User.last_login >= seven_days_ago
     ).scalar()
@@ -256,7 +256,7 @@ def get_workout_statistics(db: Session) -> dict:
     total_exercises_logged = db.query(func.count(LogExercise.id)).scalar()
 
     # Workouts in last 30 days
-    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
     workouts_30d = db.query(func.count(WorkoutSession.id)).filter(
         WorkoutSession.workout_date >= thirty_days_ago.date()
     ).scalar()

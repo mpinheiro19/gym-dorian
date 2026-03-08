@@ -1,6 +1,6 @@
 """Analytics CRUD operations for workout progress tracking."""
 from typing import Optional, List
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
 from sqlalchemy import text, func
 from sqlalchemy.orm import Session
 
@@ -43,7 +43,7 @@ def get_exercise_progress(
         ExerciseProgressResponse: Exercise progress data or None
     """
     # Query from materialized view
-    cutoff_date = datetime.utcnow().date() - timedelta(days=days)
+    cutoff_date = datetime.now(timezone.utc).date() - timedelta(days=days)
 
     query = text("""
         SELECT
@@ -198,7 +198,7 @@ def get_workout_volume_by_week(
     Returns:
         List[WorkoutVolumeByWeek]: Weekly workout volumes
     """
-    cutoff_date = datetime.utcnow().date() - timedelta(weeks=weeks)
+    cutoff_date = datetime.now(timezone.utc).date() - timedelta(weeks=weeks)
 
     query = text("""
         SELECT
@@ -235,7 +235,7 @@ def get_workout_volume_by_month(
     Returns:
         List[WorkoutVolumeByMonth]: Monthly workout volumes
     """
-    cutoff_date = datetime.utcnow().date() - timedelta(days=months * 30)
+    cutoff_date = datetime.now(timezone.utc).date() - timedelta(days=months * 30)
 
     query = text("""
         SELECT
@@ -394,7 +394,7 @@ def generate_user_insights(db: Session, user_id: int) -> List[WorkoutInsight]:
             type="achievement",
             title="Workout Today!",
             description="You logged a workout today. Keep up the great work!",
-            insight_date=datetime.utcnow().date(),
+            insight_date=datetime.now(timezone.utc).date(),
             priority=5
         ))
     elif summary.recent_activity_days >= 7:
