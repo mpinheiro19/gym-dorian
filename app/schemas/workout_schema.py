@@ -1,6 +1,7 @@
 """Workout logging schemas for API requests and responses."""
 from typing import Optional, List
 from datetime import date, datetime
+from uuid import UUID
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 from app.models.enums import MuscleGroup
@@ -46,6 +47,7 @@ class LogExerciseCreate(BaseModel):
     """Schema for creating a log exercise entry."""
     exercise_id: int = Field(..., gt=0)
     sets: List['SetDetail'] = Field(..., min_length=1)
+    client_uuid: Optional[UUID] = Field(None, description="Client-generated UUID for offline sync")
 
 
 class LogExerciseUpdate(BaseModel):
@@ -60,6 +62,9 @@ class LogExerciseResponse(BaseModel):
     session_id: int
     exercise: ExerciseResponse
     sets: List['SetDetailResponse'] = []
+    client_uuid: UUID
+    created_at: datetime
+    updated_at: datetime
 
     # Computed fields (from model properties)
     sets_completed: int
@@ -82,12 +87,16 @@ class SetDetail(BaseModel):
     rpe: Optional[int] = Field(None, ge=1, le=10, description="Rate of Perceived Exertion (1-10)")
     notes: Optional[str] = Field(None, max_length=500)
     rest_time_seconds: Optional[int] = Field(None, ge=0, le=3600, description="Rest time after set in seconds")
+    client_uuid: Optional[UUID] = Field(None, description="Client-generated UUID for offline sync")
 
 
 class SetDetailResponse(SetDetail):
     """Set detail with database ID for responses."""
     id: int
     log_exercise_id: int
+    client_uuid: UUID
+    created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -109,6 +118,7 @@ class WorkoutSessionCreate(WorkoutSessionBase):
     # Optional traceability fields — set when session originates from a template or plan
     template_id: Optional[int] = Field(None, gt=0, description="Template this session was started from")
     plan_id: Optional[int] = Field(None, gt=0, description="Plan this session belongs to")
+    client_uuid: Optional[UUID] = Field(None, description="Client-generated UUID for offline sync")
 
 
 class WorkoutSessionUpdate(BaseModel):
@@ -127,6 +137,9 @@ class WorkoutSessionResponse(WorkoutSessionBase):
     template_id: Optional[int] = None
     plan_id: Optional[int] = None
     exercises_done: List[LogExerciseResponse] = []
+    client_uuid: UUID
+    created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -140,6 +153,8 @@ class WorkoutSessionSummary(BaseModel):
     notes: Optional[str]
     exercise_count: int
     total_volume: float
+    client_uuid: UUID
+    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -152,6 +167,7 @@ class QuickLogExercise(BaseModel):
     """Quick logging format - just exercise and sets."""
     exercise_id: int
     sets: List[SetDetail]
+    client_uuid: Optional[UUID] = Field(None, description="Client-generated UUID for offline sync")
 
 
 class QuickWorkoutLog(BaseModel):
@@ -162,6 +178,7 @@ class QuickWorkoutLog(BaseModel):
     notes: Optional[str] = None
     template_id: Optional[int] = Field(None, gt=0, description="Template this session was started from")
     plan_id: Optional[int] = Field(None, gt=0, description="Plan this session belongs to")
+    client_uuid: Optional[UUID] = Field(None, description="Client-generated UUID for offline sync")
 
 
 # ===========================

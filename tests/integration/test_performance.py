@@ -41,7 +41,7 @@ class TestDatabasePerformance:
     
     def test_query_performance_with_large_dataset(self, db_session: Session):
         """Test query performance with larger dataset."""
-        from models.exercise import Exercise
+        from app.models.exercise import Exercise
         
         # Create 200 exercises
         exercises = ExerciseFactory.create_batch(200)
@@ -52,7 +52,7 @@ class TestDatabasePerformance:
         
         # Perform query
         results = db_session.query(Exercise).filter(
-            Exercise.muscle_group == "Group 0"
+            Exercise.agonist_muscle_group == "Group 0"
         ).all()
         
         end_time = time.time()
@@ -64,13 +64,13 @@ class TestDatabasePerformance:
     
     def test_workout_session_with_many_exercises(self, db_session: Session, sample_exercises):
         """Test creating workout sessions with many exercises."""
-        from models.log import WorkoutSession, LogExercise
+        from app.models.log import WorkoutSession, LogExercise
         from datetime import date
         
         start_time = time.time()
         
         # Create session with 10 exercises
-        session = WorkoutSession(workout_date=date.today())
+        session = WorkoutSession(user_id=1, workout_date=date.today())
         db_session.add(session)
         db_session.commit()
         db_session.refresh(session)
@@ -79,10 +79,7 @@ class TestDatabasePerformance:
         logs = [
             LogExercise(
                 session_id=session.id,
-                exercise_id=sample_exercises[i % len(sample_exercises)].id,
-                sets_completed=3,
-                top_weight=100.0 + i * 10,
-                total_reps=30
+                exercise_id=sample_exercises[i % len(sample_exercises)].id
             )
             for i in range(10)
         ]
@@ -138,7 +135,7 @@ class TestMemoryAndResourceUsage:
     def test_memory_cleanup_after_operations(self, db_session: Session):
         """Test that memory is properly cleaned up after operations."""
         import gc
-        from models.exercise import Exercise
+        from app.models.exercise import Exercise
         
         # Force garbage collection before test
         gc.collect()
@@ -163,7 +160,7 @@ class TestMemoryAndResourceUsage:
     
     def test_large_query_result_handling(self, db_session: Session):
         """Test handling large query results efficiently."""
-        from models.exercise import Exercise
+        from app.models.exercise import Exercise
         
         # Create 500 exercises
         exercises = ExerciseFactory.create_batch(500)
@@ -194,7 +191,7 @@ class TestConcurrencyAndRaceConditions:
         Note: This is a simplified test. For true concurrency testing,
         you would need to use threading or async operations.
         """
-        from models.log import WorkoutSession
+        from app.models.log import WorkoutSession
         from datetime import date
         
         sessions = [
@@ -222,7 +219,7 @@ class TestScalability:
     
     def test_pagination_efficiency(self, db_session: Session):
         """Test that pagination works efficiently with large datasets."""
-        from models.exercise import Exercise
+        from app.models.exercise import Exercise
         
         # Create 1000 exercises
         exercises = ExerciseFactory.create_batch(1000)
@@ -249,8 +246,8 @@ class TestScalability:
     
     def test_complex_join_performance(self, db_session: Session, sample_workout_session):
         """Test performance of queries with joins."""
-        from models.log import WorkoutSession, LogExercise
-        from models.exercise import Exercise
+        from app.models.log import WorkoutSession, LogExercise
+        from app.models.exercise import Exercise
         
         start_time = time.time()
         

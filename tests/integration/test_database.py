@@ -123,7 +123,7 @@ class TestDatabaseIntegration:
         # Simulate an exception and close generator
         session_ref = session  # Keep reference
         try:
-            gen.throw(RuntimeError, RuntimeError("Simulated error"))
+            gen.throw(RuntimeError("Simulated error"))
         except RuntimeError:
             pass  # Expected
         

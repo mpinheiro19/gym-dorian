@@ -18,8 +18,7 @@ email-validator>=2.0  # Required for EmailStr validation
 alembic>=1.10
 
 # Authentication / Password hashing
-passlib[bcrypt]>=1.7
-bcrypt==3.2.2  # Pinned to 3.2.2 for full passlib compatibility
+bcrypt>=4.0  # Direct bcrypt usage; passlib removed (unmaintained, crypt deprecated in Py 3.12, removed in Py 3.13)
 python-jose[cryptography]>=3.3  # For JWT tokens
 python-multipart>=0.0.5  # For form data parsing
 

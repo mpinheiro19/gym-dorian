@@ -1,6 +1,6 @@
 """Workout plan models using SQLAlchemy 2.0 syntax."""
 from typing import Optional, TYPE_CHECKING
-from datetime import date as date_type, datetime
+from datetime import date as date_type, datetime, timezone
 from sqlalchemy import ForeignKey, Text, Date, UniqueConstraint, Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
@@ -46,10 +46,10 @@ class WorkoutPlan(Base):
         default=PlanStatus.QUEUED,
     )
     start_date: Mapped[Optional[date_type]] = mapped_column(Date(), default=None)
-    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.utcnow())
+    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[Optional[datetime]] = mapped_column(
         default=None,
-        onupdate=lambda: datetime.utcnow(),
+        onupdate=lambda: datetime.now(timezone.utc),
     )
 
     # Relationships
