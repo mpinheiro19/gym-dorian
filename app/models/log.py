@@ -1,6 +1,6 @@
 """Workout logging models using SQLAlchemy 2.0 syntax."""
 from typing import Optional, TYPE_CHECKING
-from datetime import date as date_type, datetime
+from datetime import date as date_type, datetime, timezone
 from sqlalchemy import ForeignKey, Text, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin, SyncMixin
@@ -34,7 +34,7 @@ class WorkoutSession(TimestampMixin, SyncMixin, Base):
         index=True,
         nullable=False
     )
-    workout_date: Mapped[date_type] = mapped_column(Date, default=lambda: datetime.utcnow().date())
+    workout_date: Mapped[date_type] = mapped_column(Date, default=lambda: datetime.now(timezone.utc).date())
     duration_minutes: Mapped[Optional[int]] = mapped_column(default=None)
     notes: Mapped[Optional[str]] = mapped_column(Text(), default=None)
 

@@ -1,6 +1,6 @@
 """Workout template models using SQLAlchemy 2.0 syntax."""
 from typing import Optional, TYPE_CHECKING
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
@@ -33,10 +33,10 @@ class WorkoutTemplate(Base):
     )
     name: Mapped[str] = mapped_column(nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text(), default=None)
-    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.utcnow())
+    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[Optional[datetime]] = mapped_column(
         default=None,
-        onupdate=lambda: datetime.utcnow()
+        onupdate=lambda: datetime.now(timezone.utc)
     )
 
     # Relationships
