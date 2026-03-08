@@ -1,6 +1,6 @@
 """CRUD operations for workout plans."""
 from typing import Optional, List
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import select
 
@@ -163,7 +163,7 @@ def update_plan(
     for field, value in update_data.items():
         setattr(plan, field, value)
 
-    plan.updated_at = datetime.utcnow()
+    plan.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(plan)
     return _plan_with_eager(db, plan.id)
@@ -226,7 +226,7 @@ def update_plan_status(
     if new_status == PlanStatus.ACTIVE and plan.start_date is None:
         plan.start_date = date.today()
 
-    plan.updated_at = datetime.utcnow()
+    plan.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(plan)
     return plan
