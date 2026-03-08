@@ -3,7 +3,7 @@ from typing import Optional, TYPE_CHECKING
 from datetime import date as date_type, datetime
 from sqlalchemy import ForeignKey, Text, Date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.models.base import Base
+from app.models.base import Base, TimestampMixin, SyncMixin
 
 if TYPE_CHECKING:
     from app.models.user import User
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from app.models.plan import WorkoutPlan
 
 
-class WorkoutSession(Base):
+class WorkoutSession(TimestampMixin, SyncMixin, Base):
     """Represents a complete workout session.
 
     Attributes:
@@ -20,6 +20,9 @@ class WorkoutSession(Base):
         workout_date: Date when workout was performed
         duration_minutes: Total workout duration in minutes
         notes: Additional notes about the workout
+        client_uuid: Client-generated UUID for offline sync
+        created_at: Timestamp when record was created
+        updated_at: Timestamp when record was last updated
         user: Relationship to User
         exercises_done: Relationship to logged exercises in this session
     """
@@ -56,14 +59,32 @@ class WorkoutSession(Base):
         cascade="all, delete-orphan"
     )
 
+    # Computed properties used by WorkoutSessionSummary schema
+    @property
+    def exercise_count(self) -> int:
+        """Number of distinct exercises logged in this session."""
+        return len(self.exercises_done)
 
-class LogExercise(Base):
+    @property
+    def total_volume(self) -> float:
+        """Total volume (sum of reps * weight across all exercises and sets)."""
+        return sum(
+            s.reps * s.weight
+            for le in self.exercises_done
+            for s in le.sets
+        )
+
+
+class LogExercise(TimestampMixin, SyncMixin, Base):
     """Represents a logged exercise within a workout session.
 
     Attributes:
         id: Primary key identifier
         session_id: Foreign key to WorkoutSession
         exercise_id: Foreign key to Exercise
+        client_uuid: Client-generated UUID for offline sync
+        created_at: Timestamp when record was created
+        updated_at: Timestamp when record was last updated
         session: Relationship to the parent WorkoutSession
         exercise: Relationship to the Exercise definition
         sets: Relationship to individual sets performed
@@ -104,7 +125,7 @@ class LogExercise(Base):
         return sum(s.reps * s.weight for s in self.sets)
 
 
-class LogSet(Base):
+class LogSet(TimestampMixin, SyncMixin, Base):
     """Represents a single set within a logged exercise.
 
     Attributes:
@@ -116,6 +137,9 @@ class LogSet(Base):
         rpe: Optional Rate of Perceived Exertion (1-10 scale)
         notes: Optional notes about this specific set
         rest_time_seconds: Optional rest time after this set in seconds
+        client_uuid: Client-generated UUID for offline sync
+        created_at: Timestamp when record was created
+        updated_at: Timestamp when record was last updated
         log_exercise: Relationship to the parent LogExercise
     """
     __tablename__ = 'log_sets'

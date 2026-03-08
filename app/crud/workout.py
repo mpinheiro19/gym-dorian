@@ -133,15 +133,19 @@ def _create_sets_for_exercise(db: Session, log_exercise_id: int, sets: List[SetD
         sets: List of set details to create
     """
     for set_data in sets:
-        log_set = LogSet(
+        kwargs: dict = dict(
             log_exercise_id=log_exercise_id,
             set_number=set_data.set_number,
             reps=set_data.reps,
             weight=set_data.weight,
             rpe=set_data.rpe,
             notes=set_data.notes,
-            rest_time_seconds=getattr(set_data, 'rest_time_seconds', None)
+            rest_time_seconds=getattr(set_data, 'rest_time_seconds', None),
         )
+        client_uuid = getattr(set_data, 'client_uuid', None)
+        if client_uuid is not None:
+            kwargs['client_uuid'] = str(client_uuid)
+        log_set = LogSet(**kwargs)
         db.add(log_set)
 
 
@@ -224,7 +228,7 @@ def create_workout_session(
         WorkoutSession: Created workout session
     """
     # Create workout session
-    workout = WorkoutSession(
+    workout_kwargs: dict = dict(
         user_id=user_id,
         workout_date=workout_in.workout_date,
         duration_minutes=workout_in.duration_minutes,
@@ -232,15 +236,23 @@ def create_workout_session(
         template_id=getattr(workout_in, 'template_id', None),
         plan_id=getattr(workout_in, 'plan_id', None),
     )
+    client_uuid = getattr(workout_in, 'client_uuid', None)
+    if client_uuid is not None:
+        workout_kwargs['client_uuid'] = str(client_uuid)
+    workout = WorkoutSession(**workout_kwargs)
     db.add(workout)
     db.flush()  # Flush to get workout.id
 
     # Add exercises with sets
     for exercise_data in workout_in.exercises:
-        log_exercise = LogExercise(
+        ex_kwargs: dict = dict(
             session_id=workout.id,
-            exercise_id=exercise_data.exercise_id
+            exercise_id=exercise_data.exercise_id,
         )
+        ex_client_uuid = getattr(exercise_data, 'client_uuid', None)
+        if ex_client_uuid is not None:
+            ex_kwargs['client_uuid'] = str(ex_client_uuid)
+        log_exercise = LogExercise(**ex_kwargs)
         db.add(log_exercise)
         db.flush()  # Flush to get log_exercise.id
 
@@ -269,7 +281,7 @@ def create_quick_workout(
         WorkoutSession: Created workout session
     """
     # Create workout session
-    workout = WorkoutSession(
+    qw_kwargs: dict = dict(
         user_id=user_id,
         workout_date=quick_log.workout_date,
         duration_minutes=quick_log.duration_minutes,
@@ -277,15 +289,23 @@ def create_quick_workout(
         template_id=quick_log.template_id,
         plan_id=quick_log.plan_id,
     )
+    qw_client_uuid = getattr(quick_log, 'client_uuid', None)
+    if qw_client_uuid is not None:
+        qw_kwargs['client_uuid'] = str(qw_client_uuid)
+    workout = WorkoutSession(**qw_kwargs)
     db.add(workout)
     db.flush()
 
     # Process each exercise
     for exercise_data in quick_log.exercises:
-        log_exercise = LogExercise(
+        qe_kwargs: dict = dict(
             session_id=workout.id,
-            exercise_id=exercise_data.exercise_id
+            exercise_id=exercise_data.exercise_id,
         )
+        qe_client_uuid = getattr(exercise_data, 'client_uuid', None)
+        if qe_client_uuid is not None:
+            qe_kwargs['client_uuid'] = str(qe_client_uuid)
+        log_exercise = LogExercise(**qe_kwargs)
         db.add(log_exercise)
         db.flush()  # Flush to get log_exercise.id
 
@@ -412,10 +432,14 @@ def add_exercise_to_workout(
     Returns:
         LogExercise: Created exercise log
     """
-    log_exercise = LogExercise(
+    ae_kwargs: dict = dict(
         session_id=workout_id,
-        exercise_id=exercise_in.exercise_id
+        exercise_id=exercise_in.exercise_id,
     )
+    ae_client_uuid = getattr(exercise_in, 'client_uuid', None)
+    if ae_client_uuid is not None:
+        ae_kwargs['client_uuid'] = str(ae_client_uuid)
+    log_exercise = LogExercise(**ae_kwargs)
     db.add(log_exercise)
     db.flush()  # Flush to get log_exercise.id
 
