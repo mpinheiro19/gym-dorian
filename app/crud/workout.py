@@ -228,7 +228,9 @@ def create_workout_session(
         user_id=user_id,
         workout_date=workout_in.workout_date,
         duration_minutes=workout_in.duration_minutes,
-        notes=workout_in.notes
+        notes=workout_in.notes,
+        template_id=getattr(workout_in, 'template_id', None),
+        plan_id=getattr(workout_in, 'plan_id', None),
     )
     db.add(workout)
     db.flush()  # Flush to get workout.id
@@ -271,7 +273,9 @@ def create_quick_workout(
         user_id=user_id,
         workout_date=quick_log.workout_date,
         duration_minutes=quick_log.duration_minutes,
-        notes=quick_log.notes
+        notes=quick_log.notes,
+        template_id=quick_log.template_id,
+        plan_id=quick_log.plan_id,
     )
     db.add(workout)
     db.flush()

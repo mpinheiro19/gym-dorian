@@ -9,6 +9,7 @@ import enum
 if TYPE_CHECKING:
     from app.models.log import WorkoutSession
     from app.models.template import WorkoutTemplate
+    from app.models.plan import WorkoutPlan
 
 
 class User(Base):
@@ -74,6 +75,10 @@ class User(Base):
         cascade="all, delete-orphan"
     )
     workout_templates: Mapped[list["WorkoutTemplate"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+    workout_plans: Mapped[list["WorkoutPlan"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan"
     )
