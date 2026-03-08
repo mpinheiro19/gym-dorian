@@ -160,6 +160,8 @@ class QuickWorkoutLog(BaseModel):
     exercises: List[QuickLogExercise] = Field(..., min_length=1)
     duration_minutes: Optional[int] = None
     notes: Optional[str] = None
+    template_id: Optional[int] = Field(None, gt=0, description="Template this session was started from")
+    plan_id: Optional[int] = Field(None, gt=0, description="Plan this session belongs to")
 
 
 # ===========================

@@ -273,7 +273,9 @@ def create_quick_workout(
         user_id=user_id,
         workout_date=quick_log.workout_date,
         duration_minutes=quick_log.duration_minutes,
-        notes=quick_log.notes
+        notes=quick_log.notes,
+        template_id=quick_log.template_id,
+        plan_id=quick_log.plan_id,
     )
     db.add(workout)
     db.flush()
