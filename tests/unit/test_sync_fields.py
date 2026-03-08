@@ -85,7 +85,7 @@ class TestWorkoutSessionSyncFields:
 
     def test_created_at_set_on_insert(self, db_session: Session):
         """created_at is populated immediately after INSERT."""
-        before = datetime.utcnow()
+        before = datetime.now(timezone.utc)
         ws = _make_session(db_session)
         db_session.commit()
         db_session.refresh(ws)
