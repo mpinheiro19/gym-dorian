@@ -239,26 +239,10 @@ def start_workout_from_plan(
             detail="Today is a rest day in this plan.",
         )
 
-    # today_result is TodayWorkoutResponse here
-    from app.schemas.workout_schema import LogExerciseCreate, SetDetail
-    from app.models.template import WorkoutTemplate, TemplateExercise
-
-    template = db.query(WorkoutTemplate).filter(
-        WorkoutTemplate.id == today_result.template_id
-    ).first()
-
-    exercises = []
-    if template:
-        for te in template.exercises:
-            exercises.append(
-                LogExerciseCreate(
-                    exercise_id=te.exercise_id,
-                    sets=[],
-                )
-            )
-
+    # Create an empty session with traceability to the template and plan.
+    # The frontend uses the template_id to load exercises during the active workout.
     session_in = WorkoutSessionCreate(
-        exercises=exercises,
+        exercises=[],
         template_id=today_result.template_id,
         plan_id=plan_id,
     )

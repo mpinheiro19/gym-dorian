@@ -25,19 +25,19 @@ class TestExerciseFactory:
         exercise = ExerciseFactory.create()
         
         assert exercise.name == "Test Exercise"
-        assert exercise.muscle_group == "Test Group"
+        assert exercise.agonist_muscle_group == "Test Group"
         assert exercise.equipment_type == "Test Equipment"
     
     def test_create_custom_exercise(self):
         """Test creating an exercise with custom values."""
         exercise = ExerciseFactory.create(
             name="Bench Press",
-            muscle_group="Chest",
+            agonist_muscle_group="Chest",
             equipment_type="Barbell"
         )
         
         assert exercise.name == "Bench Press"
-        assert exercise.muscle_group == "Chest"
+        assert exercise.agonist_muscle_group == "Chest"
         assert exercise.equipment_type == "Barbell"
     
     def test_create_exercise_batch(self):

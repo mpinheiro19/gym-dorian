@@ -20,7 +20,7 @@ class TestExerciseModel:
         """Test creating a new exercise."""
         exercise = Exercise(
             name="Bench Press",
-            muscle_group="Chest",
+            agonist_muscle_group="Chest",
             equipment_type="Barbell"
         )
         
@@ -30,13 +30,13 @@ class TestExerciseModel:
         
         assert exercise.id is not None
         assert exercise.name == "Bench Press"
-        assert exercise.muscle_group == "Chest"
+        assert exercise.agonist_muscle_group == "Chest"
         assert exercise.equipment_type == "Barbell"
     
     def test_exercise_unique_name_constraint(self, db_session: Session):
         """Test that exercise names must be unique."""
-        exercise1 = Exercise(name="Squat", muscle_group="Legs")
-        exercise2 = Exercise(name="Squat", muscle_group="Legs")
+        exercise1 = Exercise(name="Squat", agonist_muscle_group="Legs")
+        exercise2 = Exercise(name="Squat", agonist_muscle_group="Legs")
         
         db_session.add(exercise1)
         db_session.commit()
@@ -54,12 +54,12 @@ class TestExerciseModel:
         
         assert result is not None
         assert result.name == "Bench Press"
-        assert result.muscle_group == "Chest"
+        assert result.agonist_muscle_group == "Chest"
     
     def test_query_exercises_by_muscle_group(self, db_session: Session, sample_exercises):
         """Test querying exercises by muscle group."""
         back_exercises = db_session.query(Exercise).filter(
-            Exercise.muscle_group == "Back"
+            Exercise.agonist_muscle_group == "Back"
         ).all()
         
         assert len(back_exercises) == 2
@@ -72,12 +72,12 @@ class TestExerciseModel:
         exercise = sample_exercises[0]
         original_name = exercise.name
         
-        exercise.muscle_group = "Upper Chest"
+        exercise.agonist_muscle_group = "Upper Chest"
         db_session.commit()
         db_session.refresh(exercise)
         
         assert exercise.name == original_name
-        assert exercise.muscle_group == "Upper Chest"
+        assert exercise.agonist_muscle_group == "Upper Chest"
     
     def test_delete_exercise(self, db_session: Session, sample_exercises):
         """Test deleting an exercise."""
@@ -114,7 +114,7 @@ class TestExerciseModel:
         
         assert exercise.id is not None
         assert exercise.name == "Push Up"
-        assert exercise.muscle_group is None
+        assert exercise.agonist_muscle_group is None
         assert exercise.equipment_type is None
     
     def test_exercise_count(self, db_session: Session, sample_exercises):
