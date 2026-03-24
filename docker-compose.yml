@@ -29,6 +29,18 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      # ──── SMTP Configuration (Email Delivery) ────
+      # Uncomment and fill in to enable email delivery in production.
+      # In development (ENV_STATE=development), emails are printed to console.
+      # Gmail example: use an App Password from https://myaccount.google.com/apppasswords
+      # - SMTP_HOST=smtp.gmail.com
+      # - SMTP_PORT=587
+      # - SMTP_USER=your-email@gmail.com
+      # - SMTP_PASSWORD=your-app-password
+      # - SMTP_USE_TLS=true
+      # - SMTP_USE_SSL=false
+      # - SENDER_EMAIL=noreply@gymdorian.com
+      # - SENDER_NAME=Gym Dorian
     depends_on:
       - db
 
