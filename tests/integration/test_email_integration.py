@@ -4,8 +4,6 @@ Integration tests for app.core.email module.
 Tests the email module end-to-end using real Settings instances
 and monkeypatching only the network layer (smtplib) when needed.
 """
-import smtplib
-from unittest.mock import MagicMock, patch
 
 import pytest
 

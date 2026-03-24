@@ -7,7 +7,9 @@ through environment variables and .env files. The configuration follows a priori
 2. .env file (fallback for local development)
 3. Default values (lowest priority)
 """
+
 from typing import Literal, Optional
+
 from pydantic import Field, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -115,10 +117,10 @@ class Settings(BaseSettings):
         return bool(self.SMTP_HOST and self.SENDER_EMAIL)
 
     model_config = SettingsConfigDict(
-        env_file='.env',
-        env_file_encoding='utf-8',
+        env_file=".env",
+        env_file_encoding="utf-8",
         case_sensitive=False,
-        extra='ignore',
+        extra="ignore",
     )
 
 

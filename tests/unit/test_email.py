@@ -10,8 +10,9 @@ Tests cover:
 - EmailConfig construction from settings
 - SendEmailRequest validation
 """
+
 import smtplib
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from pydantic import ValidationError
@@ -19,8 +20,6 @@ from pydantic import ValidationError
 from app.core.email import (
     EmailConfig,
     SendEmailRequest,
-    _log_email_to_console,
-    _send_smtp_email,
     build_password_reset_email,
     send_email,
 )
@@ -81,7 +80,9 @@ class TestSendEmailProduction:
         monkeypatch.setattr("app.core.email.settings.SMTP_PASSWORD", "app-password")
         monkeypatch.setattr("app.core.email.settings.SMTP_USE_TLS", True)
         monkeypatch.setattr("app.core.email.settings.SMTP_USE_SSL", False)
-        monkeypatch.setattr("app.core.email.settings.SENDER_EMAIL", "noreply@gymdorian.com")
+        monkeypatch.setattr(
+            "app.core.email.settings.SENDER_EMAIL", "noreply@gymdorian.com"
+        )
         monkeypatch.setattr("app.core.email.settings.SENDER_NAME", "Gym Dorian")
 
         request = SendEmailRequest(
@@ -100,7 +101,9 @@ class TestSendEmailProduction:
         assert result is True
         mock_smtp_cls.assert_called_once_with("smtp.gmail.com", 587)
         mock_smtp_instance.starttls.assert_called_once()
-        mock_smtp_instance.login.assert_called_once_with("user@gmail.com", "app-password")
+        mock_smtp_instance.login.assert_called_once_with(
+            "user@gmail.com", "app-password"
+        )
         mock_smtp_instance.sendmail.assert_called_once()
 
     def test_send_email_production_ssl_success(self, monkeypatch):
@@ -112,7 +115,9 @@ class TestSendEmailProduction:
         monkeypatch.setattr("app.core.email.settings.SMTP_PASSWORD", "app-password")
         monkeypatch.setattr("app.core.email.settings.SMTP_USE_TLS", False)
         monkeypatch.setattr("app.core.email.settings.SMTP_USE_SSL", True)
-        monkeypatch.setattr("app.core.email.settings.SENDER_EMAIL", "noreply@gymdorian.com")
+        monkeypatch.setattr(
+            "app.core.email.settings.SENDER_EMAIL", "noreply@gymdorian.com"
+        )
         monkeypatch.setattr("app.core.email.settings.SENDER_NAME", "Gym Dorian")
 
         request = SendEmailRequest(
@@ -131,7 +136,9 @@ class TestSendEmailProduction:
         assert result is True
         mock_ssl_cls.assert_called_once_with("smtp.gmail.com", 465)
         mock_smtp_instance.starttls.assert_not_called()
-        mock_smtp_instance.login.assert_called_once_with("user@gmail.com", "app-password")
+        mock_smtp_instance.login.assert_called_once_with(
+            "user@gmail.com", "app-password"
+        )
         mock_smtp_instance.sendmail.assert_called_once()
 
     def test_send_email_smtp_failure_returns_false(self, monkeypatch):
@@ -143,7 +150,9 @@ class TestSendEmailProduction:
         monkeypatch.setattr("app.core.email.settings.SMTP_PASSWORD", "bad-pass")
         monkeypatch.setattr("app.core.email.settings.SMTP_USE_TLS", True)
         monkeypatch.setattr("app.core.email.settings.SMTP_USE_SSL", False)
-        monkeypatch.setattr("app.core.email.settings.SENDER_EMAIL", "noreply@gymdorian.com")
+        monkeypatch.setattr(
+            "app.core.email.settings.SENDER_EMAIL", "noreply@gymdorian.com"
+        )
         monkeypatch.setattr("app.core.email.settings.SENDER_NAME", "Gym Dorian")
 
         request = SendEmailRequest(
@@ -152,7 +161,9 @@ class TestSendEmailProduction:
             html_body="<p>Fail</p>",
         )
 
-        with patch("smtplib.SMTP", side_effect=smtplib.SMTPException("connection refused")):
+        with patch(
+            "smtplib.SMTP", side_effect=smtplib.SMTPException("connection refused")
+        ):
             result = send_email(request)
 
         assert result is False
@@ -168,7 +179,9 @@ class TestSendEmailProduction:
         monkeypatch.setattr("app.core.email.settings.SMTP_PASSWORD", None)
         monkeypatch.setattr("app.core.email.settings.SMTP_USE_TLS", True)
         monkeypatch.setattr("app.core.email.settings.SMTP_USE_SSL", False)
-        monkeypatch.setattr("app.core.email.settings.SENDER_EMAIL", "noreply@example.com")
+        monkeypatch.setattr(
+            "app.core.email.settings.SENDER_EMAIL", "noreply@example.com"
+        )
         monkeypatch.setattr("app.core.email.settings.SENDER_NAME", "Test")
 
         request = SendEmailRequest(
@@ -193,7 +206,9 @@ class TestSendEmailProduction:
         monkeypatch.setattr("app.core.email.settings.SMTP_PASSWORD", "wrong")
         monkeypatch.setattr("app.core.email.settings.SMTP_USE_TLS", True)
         monkeypatch.setattr("app.core.email.settings.SMTP_USE_SSL", False)
-        monkeypatch.setattr("app.core.email.settings.SENDER_EMAIL", "noreply@gymdorian.com")
+        monkeypatch.setattr(
+            "app.core.email.settings.SENDER_EMAIL", "noreply@gymdorian.com"
+        )
         monkeypatch.setattr("app.core.email.settings.SENDER_NAME", "Gym Dorian")
 
         request = SendEmailRequest(
@@ -221,7 +236,9 @@ class TestBuildPasswordResetEmail:
 
     def test_build_password_reset_email_correct_recipient(self):
         """The email is addressed to the supplied user_email."""
-        result = build_password_reset_email("athlete@example.com", "https://example.com/reset")
+        result = build_password_reset_email(
+            "athlete@example.com", "https://example.com/reset"
+        )
         assert result.to == "athlete@example.com"
 
     def test_build_password_reset_email_subject(self):
@@ -231,7 +248,9 @@ class TestBuildPasswordResetEmail:
 
     def test_build_password_reset_email_html_structure(self):
         """HTML body contains essential structural elements."""
-        result = build_password_reset_email("u@example.com", "https://example.com/reset")
+        result = build_password_reset_email(
+            "u@example.com", "https://example.com/reset"
+        )
         assert "<!DOCTYPE html>" in result.html_body
         assert "1 hour" in result.html_body
 

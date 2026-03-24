@@ -5,6 +5,7 @@ Defines Pydantic models for the Password Reset Flow feature.
 These schemas are stubs — the endpoints consuming them will be implemented
 in the Password Reset Flow feature (spec: password-reset-flow).
 """
+
 import re
 
 from pydantic import BaseModel, EmailStr, field_validator

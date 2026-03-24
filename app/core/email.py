@@ -11,6 +11,7 @@ Usage:
     request = build_password_reset_email(user_email="user@example.com", reset_link="https://...")
     success = send_email(request)
 """
+
 import logging
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -51,7 +52,9 @@ class SendEmailRequest(BaseModel):
 
 def _log_email_to_console(request: SendEmailRequest) -> None:
     """Print email contents to stdout/log — used in development."""
-    truncated_body = request.html_body[:500] + ("..." if len(request.html_body) > 500 else "")
+    truncated_body = request.html_body[:500] + (
+        "..." if len(request.html_body) > 500 else ""
+    )
     output = (
         "\n===== DEV EMAIL =====\n"
         f"To:      {request.to}\n"
@@ -103,10 +106,7 @@ def send_email(request: SendEmailRequest) -> bool:
         True  — email was sent (or printed to console in dev mode).
         False — SMTP error occurred in production (error is logged).
     """
-    use_fallback = (
-        settings.ENV_STATE == "development"
-        or not settings.smtp_configured
-    )
+    use_fallback = settings.ENV_STATE == "development" or not settings.smtp_configured
 
     if use_fallback:
         _log_email_to_console(request)

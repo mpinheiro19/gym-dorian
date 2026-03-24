@@ -6,6 +6,7 @@ Tests cover:
 - ResetPasswordRequest — valid password, and each policy violation
 - PasswordResetResponse model
 """
+
 import pytest
 from pydantic import ValidationError
 
